@@ -1,0 +1,154 @@
+.inicio-root {
+  position: relative;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  background-color: #f8fafc; /* bg-slate-50 */
+  justify-content: space-between;
+  overflow-x: hidden;
+  font-family: 'Inter', 'Noto Sans', sans-serif;
+  padding: 0 12px;
+}
+
+.inicio-header {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* <-- centraliza o conteúdo */
+  background-color: #f8fafc;
+  padding: 1rem 1rem 0.5rem 1rem;
+}
+
+.inicio-title {
+  color: #0d141c;
+  font-size: clamp(1.25rem, 6vw, 2rem); /* adaptável */
+  font-weight: 700;
+  line-height: 1.5rem;
+  letter-spacing: -0.015em;
+  text-align: center;
+  white-space: nowrap;
+  padding: 0 1rem;
+
+  /* REMOVER ESTA LINHA ↓ */
+  /* flex: 1; */
+}
+
+.inicio-grid {
+  max-width: 360px; /* reduz o máximo da área do grid */
+  margin: 0 auto; /* centraliza */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inicio-barber-card {
+  width: 100%;
+  max-width: 360px; /* garante que cada card respeite o limite */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  background: #222;
+}
+
+.inicio-barber-image {
+  width: 100%;
+  height: 160px; /* diminui a altura para ficar proporcional */
+  background-size: cover;
+  background-position: center;
+  border-radius: 8px 8px 0 0;
+}
+
+
+.inicio-barber-name {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  height: 3rem;
+  padding: 0 1.25rem;
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: #111;
+  color: rgb(44, 95, 131);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.015em;
+  transition: all 0.5s ease;
+}
+
+/* Efeito holográfico */
+.inicio-barber-name::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    0deg,
+    transparent,
+    transparent 30%,
+    rgba(44, 95, 131)
+  );
+  transform: rotate(-45deg);
+  opacity: 0;
+  transition: all 0.5s ease;
+  z-index: 1;
+}
+
+/* Hover: animação do brilho e escala */
+.inicio-barber-name:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(44, 95, 131);
+}
+
+.inicio-barber-name:hover::before {
+  opacity: 1;
+  transform: rotate(-45deg) translateY(100%);
+}
+
+.inicio-barber-name:hover {
+  background-color: #ffffff;
+}
+
+.inicio-barber-desc {
+  padding: 8px 16px 16px;
+  color: #ddd;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  text-align: center;
+}
+
+
+.inicio-footer {
+  display: flex;
+  padding: 1rem 1rem 0.75rem 1rem;
+}
+
+.inicio-btn-continue {
+  flex: 1;
+  min-width: 84px;
+  max-width: 480px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  height: 3rem; /* 12 * 0.25rem */
+  padding: 0 1.25rem; /* 5 * 0.25rem */
+  background-color: #0c7ff2;
+  color: #f8fafc; /* text-slate-50 */
+  font-size: 1rem; /* valor exemplo */
+  font-weight: 700; /* opcional */
+  letter-spacing: 0.015em; /* opcional */
+}

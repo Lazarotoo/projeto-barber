@@ -135,7 +135,7 @@ html, body, #root {
   padding: 0.75rem 1rem;
 }
 
-.btn-register {
+.btn-login {
   position: relative;
   overflow: hidden;
   border-radius: 0.5rem;
@@ -159,7 +159,7 @@ html, body, #root {
 }
 
 /* Efeito holográfico */
-.btn-register::before {
+.btn-login::before {
   content: '';
   position: absolute;
   top: -50%;
@@ -179,12 +179,12 @@ html, body, #root {
 }
 
 /* Hover: animação do brilho e escala */
-.btn-register:hover {
+.btn-login:hover {
   transform: scale(1.05);
   box-shadow: 0 0 20px rgba(44, 95, 131);
 }
 
-.btn-register:hover::before {
+.btn-login:hover::before {
   opacity: 1;
   transform: rotate(-45deg) translateY(100%);
 }
@@ -200,7 +200,7 @@ html, body, #root {
 
 
 /* Link para login */
-.login-link {
+.register-link {
   color: rgba(44, 95, 131);
   font-size: 0.875rem;
   font-weight: 400;

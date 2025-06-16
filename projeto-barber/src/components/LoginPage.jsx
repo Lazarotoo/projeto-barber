@@ -1,54 +1,67 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./LoginPage.css";
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+
+  // Estados para controlar inputs
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // Função exemplo para login (você pode adaptar depois)
+  function handleLogin(e) {
+    e.preventDefault();
+    // Aqui você pode colocar a lógica real de login (API, validação, etc)
+    alert(`Tentando logar com: \nEmail: ${email}\nSenha: ${password}`);
+  }
+
   return (
     <div className="root-container">
-      <div>
-        <div className="container">
-          <div className="container-padding">
-            <div className="hero-image"></div>
-          </div>
+      <div className="hero-image"></div>
+      <h2 className="title">Login<br /> RBI BARBER</h2>
+
+      <form onSubmit={handleLogin}>
+        <div className="input-group">
+          <label className="input-label">
+            <input
+              type="email"
+              placeholder="Email"
+              className="input-field"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </label>
         </div>
 
-        <h2 className="title">
-          Bem-Vindo de Volta<br />
-          à<br />
-          RBI BARBER
-        </h2>
-
-        {[
-          { placeholder: "Email" },
-          { placeholder: "Senha", type: "password" },
-        ].map(({ placeholder, type }, i) => (
-          <div key={i} className="input-group">
-            <label className="input-label">
-              <input
-                placeholder={placeholder}
-                className="input-field"
-                value=""
-                onChange={() => {}}
-                type={type || "text"}
-              />
-            </label>
-          </div>
-        ))}
+        <div className="input-group">
+          <label className="input-label">
+            <input
+              type="password"
+              placeholder="Senha"
+              className="input-field"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </label>
+        </div>
 
         <div className="button-container">
-          <button className="btn-register">
+          <button type="submit" className="btn-login">
             <span className="btn-text">Entrar</span>
           </button>
         </div>
+      </form>
 
-        <p className="login-link">
-          Ainda não possui conta? Registre-se aqui
-        </p>
-      </div>
-
-      <div>
-        <div className="dark-image"></div>
-        <div className="light-image"></div>
-      </div>
+      <p
+        className="register-link"
+        onClick={() => navigate("/")}
+        style={{ cursor: "pointer", textDecoration: "underline" }}
+      >
+        Não possui conta? Cadastre-se aqui
+      </p>
     </div>
   );
 }

@@ -1,7 +1,17 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./HomePage.css";
 
 export default function HomePage() {
+  const navigate = useNavigate();
+
+  // Função para tratar o clique no botão registrar
+  const handleRegisterClick = () => {
+    // Aqui você pode fazer validação, requisição, etc
+    // Por enquanto só redireciona para /inicio
+    navigate("/inicio");
+  };
+
   return (
     <div className="root-container">
       <div>
@@ -11,9 +21,13 @@ export default function HomePage() {
           </div>
         </div>
 
-        <h2 className="title">Bem-Vindo<br />
-        a<br />
-        RBI BARBER</h2>
+        <h2 className="title">
+          Bem-Vindo
+          <br />
+          a
+          <br />
+          RBI BARBER
+        </h2>
 
         {[
           { placeholder: "Nome Completo" },
@@ -35,12 +49,16 @@ export default function HomePage() {
         ))}
 
         <div className="button-container">
-          <button className="btn-register">
+          <button className="btn-register" onClick={handleRegisterClick}>
             <span className="btn-text">Registrar</span>
           </button>
         </div>
 
-        <p className="login-link">
+        <p
+          className="login-link"
+          onClick={() => navigate("/login")} // redireciona para login
+          style={{ cursor: "pointer", textDecoration: "underline" }}
+        >
           Já possui conta? Clique aqui para login
         </p>
       </div>
