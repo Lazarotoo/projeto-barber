@@ -1,7 +1,16 @@
+// InicioPage.jsx
 import React from "react";
 import "./InicioPage.css";
+import { useNavigate } from "react-router-dom";
 
 export default function InicioPage() {
+  const navigate = useNavigate();
+
+  // Função para navegar com os dados da barbearia
+  const handleNavigate = (barbershop) => {
+    navigate("/select-barber", { state: barbershop });
+  };
+
   return (
     <div className="inicio-root">
       <div>
@@ -15,12 +24,22 @@ export default function InicioPage() {
             <div
               className="inicio-barber-image"
               style={{
-                backgroundImage:
-                  'url("/images/RBI IGUAÇU FOTO.webp")',
+                backgroundImage: 'url("/images/RBI IGUAÇU FOTO.webp")',
               }}
             ></div>
             <div>
-              <button className="inicio-barber-name">RBI IGUAÇU</button>
+              <button
+                className="inicio-barber-name"
+                onClick={() =>
+                  handleNavigate({
+                    name: "RBI IGUAÇU",
+                    desc: "Rua Capivari, 354 - Iguaçu, Araucária - PR, 83701-440",
+                    image: "/images/RBI IGUAÇU FOTO.webp",
+                  })
+                }
+              >
+                RBI IGUAÇU
+              </button>
               <p className="inicio-barber-desc">
                 Rua Capivari, 354 - Iguaçu, Araucária - PR, 83701-440
               </p>
@@ -33,13 +52,24 @@ export default function InicioPage() {
               className="inicio-barber-image"
               style={{
                 backgroundImage:
-                  'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBm4u-o2qN0aIFIldCodjVJ-SghLVtCTG6Px6vFSALdS1MB-M1-sZnrOEDYXLq0vBxRHn9dflgwx_tYMzdoNiCFGMXfsI_bDWGDPKVy-7jhbOmpa2xDfQlpBhinRibrQm0ob1WaBsOXXggM_3eQCheGRMTDIODDsHCb2zCZfaOvuHaZcHr5sjUv6iPgBCURL1BoymYD4Mc0GV4cX8kPDSstsW7FjxEdbXC0e6Rn7A961CS7N7qn2NGK3jzropEL3pwte3IRTcz24dY")',
+                  'url("https://via.placeholder.com/400x250?text=Barbearia+2")',
               }}
             ></div>
             <div>
-              <button className="inicio-barber-name">RBI IGUAÇU</button>
+              <button
+                className="inicio-barber-name"
+                onClick={() =>
+                  handleNavigate({
+                    name: "Barbearia Central",
+                    desc: "Av. das Nações, 123 - Centro, Araucária - PR",
+                    image: "https://via.placeholder.com/400x250?text=Barbearia+2",
+                  })
+                }
+              >
+                Barbearia Central
+              </button>
               <p className="inicio-barber-desc">
-                Traditional cuts and shaves in a classic setting.
+                Av. das Nações, 123 - Centro, Araucária - PR
               </p>
             </div>
           </div>
@@ -50,26 +80,28 @@ export default function InicioPage() {
               className="inicio-barber-image"
               style={{
                 backgroundImage:
-                  'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAo0mOzsXBXUlv19jOXqCJGfZdTG9Pkg9xnpHydctaywkLIe_NGcifhI74gJf_9zcWFtFQ6wHHT-UAFuYbbaTl1CAKS2Wagb-50jPfCjVlhbY2W-nFK599NbfiqwjkPiRjwdPM4k1IGniDgkP5_kHln3ey8J8JnZontTBGTyF6ZAMRS61nNFUeje8OxYuGgPPevkeFNmJnZOTGh2NX3WevZfBRhJ83MLE-6n9EuB_2a73zQs_bKFOdjmsSghFa_dxgzHM-vIujaPa0")',
+                  'url("https://via.placeholder.com/400x250?text=Barbearia+3")',
               }}
             ></div>
             <div>
-              <button className="inicio-barber-name">RBI IGUAÇU</button>
+              <button
+                className="inicio-barber-name"
+                onClick={() =>
+                  handleNavigate({
+                    name: "Barber Gold",
+                    desc: "Rua das Rosas, 77 - Estação, Araucária - PR",
+                    image: "https://via.placeholder.com/400x250?text=Barbearia+3",
+                  })
+                }
+              >
+                Barber Gold
+              </button>
               <p className="inicio-barber-desc">
-                A refined experience for the discerning gentleman.
+                Rua das Rosas, 77 - Estação, Araucária - PR
               </p>
             </div>
           </div>
         </div>
-      </div>
-
-      <div>
-        <div className="inicio-footer">
-          <button className="inicio-btn-continue">
-            <span className="inicio-btn-text">Continue</span>
-          </button>
-        </div>
-        <div className="inicio-footer-spacer"></div>
       </div>
     </div>
   );

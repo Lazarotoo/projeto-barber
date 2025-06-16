@@ -128,12 +128,6 @@
   text-align: center;
 }
 
-
-.inicio-footer {
-  display: flex;
-  padding: 1rem 1rem 0.75rem 1rem;
-}
-
 .inicio-btn-continue {
   flex: 1;
   min-width: 84px;
