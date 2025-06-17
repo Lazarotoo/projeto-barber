@@ -66,20 +66,21 @@ html, body, #root {
 
 /* Imagem de topo com background */
 .hero-image {
-  height: 100%;
   width: 100%;
-  min-height: 20rem; /* min-h-80 */
+  height: auto;
+  max-height: 25vh; /* Limita altura a no máximo 25% da tela */
   background-image: url('/images/WhatsApp%20Image%202025-06-12%20at%2016.27.35.jpeg');
   background-position: center;
   background-repeat: no-repeat;
-  background-size: contain;
+  background-size: cover;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  border-radius: 0.5rem; /* rounded-lg */
+  border-radius: 0.5rem;
   overflow: hidden;
   background-color: black;
 }
+
 
 
 /* Grupo de inputs */

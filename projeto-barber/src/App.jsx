@@ -3,6 +3,7 @@ import HomePage from "./components/HomePage";
 import LoginPage from "./components/LoginPage";
 import InicioPage from "./components/InicioPage";
 import SelectBarber from "./components/SelectBarber";
+import AgendaCliente from "./components/AgendaCliente";
 
 function App() {
   return (
@@ -11,7 +12,8 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/inicio" element={<InicioPage />} />
-        <Route path="/select-barber" element={<SelectBarber />} />
+        <Route path="/select-barber" element={<SelectBarber />} /> {/* ✅ Corrigido aqui */}
+        <Route path="/agenda" element={<AgendaCliente />} />
       </Routes>
     </Router>
   );
