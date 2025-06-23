@@ -1,0 +1,136 @@
+.perfil-container {
+  max-width: 400px;
+  min-height: 100vh; /* Permite expansão */
+  margin: 0 auto;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 0 8px rgba(44, 95, 131, 0.2);
+  font-family: Arial, sans-serif;
+  color: rgba(44, 95, 131);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  /* overflow: hidden removido para permitir scroll interno na .perfil-main */
+}
+
+.perfil-header {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1rem 0.5rem 1rem; /* Igual ao SelectBarber */
+  background-color: #0d141c;
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: 100vw;
+  max-width: 400px;
+  box-sizing: border-box;
+  /* altura dinâmica conforme conteúdo + padding */
+}
+
+.perfil-back {
+  background: none;
+  border: none;
+  color: white;
+  width: 3rem;
+  height: 3rem; /* Igual ao botão do SelectBarber */
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-right: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+.perfil-back:hover {
+  color: #ccc;
+}
+
+.perfil-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  flex: 1;
+  text-align: center;
+  user-select: none;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Centraliza verticalmente */
+}
+
+.perfil-main {
+  flex-grow: 1;
+  min-height: 0;
+  margin-top: calc(1rem + 1.5rem + 0.5rem); /* espaço para o header (padding top + linha texto + padding bottom) */
+  margin-bottom: 5.5rem; /* espaço para o footer */
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-sizing: border-box;
+  overflow-y: auto;
+  text-align: center;
+}
+
+.pontos-display {
+  margin-bottom: 2rem;
+  color: black;
+}
+
+.pontos-display p:last-of-type {
+  margin-top: 6rem; /* ajuste do espaçamento abaixo do número */
+}
+
+.pontos-display h2 {
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin-top: 5rem; /* empurra o título para baixo */
+  margin-bottom: 0.6rem;
+}
+
+.pontos-num {
+  font-size: 4.5rem;
+  font-weight: 900;
+  color: rgba(44, 95, 131);
+  margin-bottom: 0.5rem;
+  user-select: text;
+}
+
+.resgatar-btn {
+  background-color: rgba(44, 95, 131);
+  color: white;
+  border: 0;
+  padding: 0.85rem 2.2rem;
+  font-size: 1.2rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+
+.resgatar-btn:disabled,
+.resgatar-btn[aria-disabled='true'] {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.resgatar-btn:not(:disabled):hover {
+  background-color: #1e3c58;
+}
+
+.resgatar-container {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  max-width: 400px;
+  background-color: #0d141c;
+  padding: 1rem;
+  box-shadow: 0 0 8px rgba(44, 95, 131, 0.2);
+  box-sizing: border-box;
+  z-index: 999;
+  text-align: center;
+}

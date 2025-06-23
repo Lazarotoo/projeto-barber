@@ -1,8 +1,8 @@
 // CalendarioBarber.jsx
 import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css'; // IMPORTANTE: CSS padrão do react-calendar
-import './CalendarioBarber.css'; // Seu CSS customizado, se tiver
+import 'react-calendar/dist/Calendar.css'; // Importa o estilo base da lib
+import './CalendarioBarber.css'; // Seu estilo customizado
 
 const monthsAbbrev = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 const weekDaysAbbrev = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -10,7 +10,6 @@ const weekDaysAbbrev = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const CalendarioBarber = ({ onClose, onDateSelect }) => {
   const [date, setDate] = useState(new Date());
 
-  // Remover title dos botões de navegação com delay para garantir que o DOM está pronto
   useEffect(() => {
     const timer = setTimeout(() => {
       const navButtons = document.querySelectorAll('.react-calendar__navigation button');
@@ -32,12 +31,7 @@ const CalendarioBarber = ({ onClose, onDateSelect }) => {
         onChange={handleDateChange}
         value={date}
         showNeighboringMonth={false}
-        formatMonthYear={(locale, date) => (
-          <>
-            <span>{monthsAbbrev[date.getMonth()]}</span><br />
-            <span style={{ fontSize: '0.8em' }}>{date.getFullYear()}</span>
-          </>
-        )}
+        formatMonthYear={(locale, date) => `${monthsAbbrev[date.getMonth()]} ${date.getFullYear()}`}
         formatShortWeekday={(locale, date) => weekDaysAbbrev[date.getDay()]}
       />
       {onClose && (

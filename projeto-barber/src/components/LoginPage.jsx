@@ -1,25 +1,54 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LoginPage.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
 
-  // Estados para controlar inputs
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Função exemplo para login (você pode adaptar depois)
-  function handleLogin(e) {
+  // Se já estiver logado, pula para início
+  useEffect(() => {
+    const logado = localStorage.getItem("clienteLogado");
+    if (logado) navigate("/inicio");
+  }, [navigate]);
+
+  const handleLogin = (e) => {
     e.preventDefault();
-    // Aqui você pode colocar a lógica real de login (API, validação, etc)
-    alert(`Tentando logar com: \nEmail: ${email}\nSenha: ${password}`);
-  }
+
+    const clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+
+    const cliente = clientes.find(
+      (c) => c.email === email && c.password === password
+    );
+
+    if (!cliente) {
+      alert("Email ou senha inválidos.");
+      return;
+    }
+
+    // Salva cliente como logado
+    localStorage.setItem("clienteLogado", JSON.stringify(cliente));
+    navigate("/inicio");
+  };
 
   return (
     <div className="root-container">
-      <div className="hero-image"></div>
-      <h2 className="title">Login<br /> RBI BARBER</h2>
+      {/* ⬇️ Bloco hero-image igual ao HomePage.jsx */}
+      <div>
+        <div className="container">
+          <div className="container-padding">
+            <div className="hero-image"></div>
+          </div>
+        </div>
+      </div>
+
+      <h2 className="title">
+        Login
+        <br />
+        RBI BARBER
+      </h2>
 
       <form onSubmit={handleLogin}>
         <div className="input-group">

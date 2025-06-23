@@ -66,13 +66,13 @@ html, body, #root {
 
 /* Imagem de topo com background */
 .hero-image {
+  height: 100%;
   width: 100%;
-  height: auto;
-  max-height: 25vh; /* Limita altura a no máximo 25% da tela */
-  background-image: url('/images/WhatsApp%20Image%202025-06-12%20at%2016.27.35.jpeg');
+  min-height: 20rem; /* altura mínima igual */
+  background-image: url('/images/WhatsApp Image 2025-06-12 at 16.27.35.jpeg'); /* ajuste a imagem */
   background-position: center;
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: contain;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -80,8 +80,6 @@ html, body, #root {
   overflow: hidden;
   background-color: black;
 }
-
-
 
 /* Grupo de inputs */
 .input-group {

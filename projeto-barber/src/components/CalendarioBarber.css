@@ -5,20 +5,17 @@
   border-radius: 10px;
   padding: 1rem;
   box-shadow: 0 0 8px rgba(0,0,0,0.1);
-
-  /* Responsivo */
   width: 100%;
-  max-width: 330px; /* impede de ultrapassar os cards */
+  max-width: 330px;
   box-sizing: border-box;
   overflow-x: auto;
 }
 
-/* Centralizar números dos dias e estilizar os botões do dia */
 .react-calendar__tile {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 45px; /* altura fixa para uniformidade */
+  height: 45px;
   font-weight: bold;
   background-color: rgba(44, 95, 131);
   color: white;
@@ -26,10 +23,9 @@
   border: none;
   cursor: pointer;
   transition: background-color 0.3s ease, color 0.3s ease, border 0.3s ease;
-  margin: px; /* espaçamento entre os dias */
+  margin: 2px; /* Corrigido aqui */
 }
 
-/* Efeito hover e selecionado igual botão cancelar */
 .react-calendar__tile:hover,
 .react-calendar__tile--active {
   background-color: white;
@@ -37,7 +33,6 @@
   border: 1px solid black;
 }
 
-/* Cabeçalho dos dias da semana (abreviações) */
 .react-calendar__month-view__weekdays {
   text-align: center;
   font-weight: bold;
@@ -50,7 +45,6 @@
   padding: 0.25rem 0;
 }
 
-/* Botões da parte inferior */
 .calendar-buttons {
   display: flex;
   justify-content: space-between;
@@ -60,7 +54,7 @@
 
 .calendar-buttons button {
   flex: 1;
-  padding: 0.75rem 1rem; /* aumentada a altura */
+  padding: 0.75rem 1rem;
   background-color: rgba(44, 95, 131);
   color: white;
   border: none;
@@ -76,17 +70,16 @@
   border: 1px solid black;
 }
 
-/* Estilização básica da biblioteca (opcional) */
 .react-calendar {
   width: 100% !important;
   border: none;
-  font-size: 14px; /* reduz tamanho geral */
+  font-size: 14px;
 }
 
 .react-calendar__navigation {
   display: flex;
   justify-content: space-between;
-  flex-wrap: nowrap; /* evita quebra */
+  flex-wrap: nowrap;
   align-items: center;
   gap: 0.25rem;
 }
@@ -101,11 +94,8 @@
   font-size: 13px;
   overflow: visible;
   line-height: 1.2;
-
-  /* Remove sublinhado */
   text-decoration: none !important;
   cursor: pointer;
-
   background-color: rgba(44, 95, 131);
   color: white;
   border: none;

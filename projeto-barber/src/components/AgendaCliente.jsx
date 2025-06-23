@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CalendarioBarber from './CalendarioBarber';
 import './AgendaCliente.css';
 
 const AgendaCliente = () => {
   const navigate = useNavigate();
-  const [agendamentos, setAgendamentos] = useState(JSON.parse(localStorage.getItem('agendamentos')) || []);
+  const [agendamentos, setAgendamentos] = useState([]);
   const [alterandoIndex, setAlterandoIndex] = useState(null);
   const [novaData, setNovaData] = useState(null);
   const [novoHorario, setNovoHorario] = useState(null);
+
+  // 🔄 Recarrega os dados do localStorage sempre que o componente for montado
+  useEffect(() => {
+    const dadosSalvos = JSON.parse(localStorage.getItem('agendamentos')) || [];
+    setAgendamentos(dadosSalvos);
+  }, []);
 
   const handleCancelar = (index) => {
     const novos = [...agendamentos];
@@ -47,13 +53,15 @@ const AgendaCliente = () => {
   };
 
   if (agendamentos.length === 0) {
-    return (
-      <div className="agenda-container">
-        <h2 className="agenda-empty">Nenhum agendamento encontrado.</h2>
-        <button className="agenda-btn" onClick={() => navigate('/selectbarber')}>Agendar agora</button>
-      </div>
-    );
-  }
+  return (
+    <div className="agenda-container">
+      <h2 className="agenda-empty">Nenhum agendamento encontrado.</h2>
+      <button className="agenda-btn" onClick={() => navigate('/select-barber')}>
+        Agendar agora
+      </button>
+    </div>
+  );
+}
 
   return (
     <div className="agenda-container">

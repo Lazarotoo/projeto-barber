@@ -14,6 +14,7 @@ const SelectBarber = () => {
   const handleBack = () => navigate(-1);
   const handleNavigateHome = () => navigate('/inicio');
   const handleNavigateAgenda = () => navigate('/agenda');
+  const handleNavigatePerfil = () => navigate('/perfil'); // Navega para Perfil
 
   const barbers = [
     { name: 'Barbeiro 1', img: 'https://randomuser.me/api/portraits/men/31.jpg' },
@@ -42,15 +43,20 @@ const SelectBarber = () => {
     if (selectedIndex !== null && selectedDate && selectedTime) {
       const selectedBarber = barbers[selectedIndex].name;
 
-      // ✅ Salvar agendamento no localStorage
       const agendamento = {
         barbeiro: selectedBarber,
         data: selectedDate,
         hora: selectedTime,
       };
-      localStorage.setItem('agendamento', JSON.stringify(agendamento));
+
+      const agendamentosSalvos = JSON.parse(localStorage.getItem('agendamentos')) || [];
+      agendamentosSalvos.push(agendamento);
+      localStorage.setItem('agendamentos', JSON.stringify(agendamentosSalvos));
 
       alert(`✅ Agendamento confirmado com ${selectedBarber} em ${selectedDate} às ${selectedTime}`);
+
+      navigate('/agenda');
+
       closeAll();
     } else {
       alert("❗ Selecione barbeiro, data e horário antes de agendar.");
@@ -99,11 +105,11 @@ const SelectBarber = () => {
                 <div
                   className="barber-image-background"
                   style={{ backgroundImage: "url('/transparent-background.png')" }}
-                ></div>
+                />
                 <div
                   className="barber-image"
                   style={{ backgroundImage: `url(${barber.img})` }}
-                ></div>
+                />
               </button>
 
               <div className="barber-info">
@@ -115,7 +121,6 @@ const SelectBarber = () => {
                 </button>
               </div>
 
-              {/* Mostrar calendário só se esse barbeiro está selecionado e ainda não escolheu data */}
               {selectedIndex === index && !selectedDate && (
                 <div style={{ overflowX: 'auto' }}>
                   <CalendarioBarber
@@ -126,7 +131,6 @@ const SelectBarber = () => {
                 </div>
               )}
 
-              {/* Mostrar seleção de horário após escolher data */}
               {selectedIndex === index && showTimeSelector && (
                 <div className="time-selector" style={{ marginTop: '1rem' }}>
                   <h4>Horários disponíveis para {selectedDate}</h4>
@@ -145,7 +149,6 @@ const SelectBarber = () => {
                 </div>
               )}
 
-              {/* Mostrar resumo de agendamento na mesma posição */}
               {selectedIndex === index && showSummary && selectedDate && selectedTime && (
                 <section className="confirm-section" style={{ marginTop: '1rem' }}>
                   <h3>Resumo do Agendamento</h3>
@@ -167,7 +170,7 @@ const SelectBarber = () => {
         <button onClick={handleNavigateAgenda} className="footer-item">
           <div className="footer-icon">📅</div><p>Agenda</p>
         </button>
-        <button className="footer-item">
+        <button onClick={handleNavigatePerfil} className="footer-item">
           <div className="footer-icon">👤</div><p>Perfil</p>
         </button>
       </nav>
