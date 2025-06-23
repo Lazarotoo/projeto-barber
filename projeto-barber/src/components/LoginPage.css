@@ -16,6 +16,8 @@ html, body, #root {
 
 /* Container raiz da página */
 .root-container {
+  padding-top: 2rem;
+  margin-top: 0rem;
   font-family: 'Inter', 'Noto Sans', sans-serif;
   position: relative;
   display: flex;
@@ -66,20 +68,24 @@ html, body, #root {
 
 /* Imagem de topo com background */
 .hero-image {
-  height: 100%;
-  width: 100%;
-  min-height: 20rem;
+  padding-top: 2rem;
+  margin-top: 2rem;
+  height: 15rem;                     /* altura fixa */
+  width: 80%;                       /* largura ajustável, ex: 80% da tela */
+  max-width: 600px;                 /* opcional: limitar o máximo */
+  margin: 0 auto;                   /* centraliza horizontalmente */
+  background-color: black;          /* fundo preto */
   background-image: url('/images/WhatsApp Image 2025-06-12 at 16.27.35.jpeg');
-  background-position: center;
+  background-position: center center;
   background-repeat: no-repeat;
-  background-size: contain;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  background-size: contain;         /* imagem ajusta dentro do container */
   border-radius: 0.5rem;
   overflow: hidden;
-  /* Removido: background-color: black; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
 
 /* Grupo de inputs */
 .input-group {

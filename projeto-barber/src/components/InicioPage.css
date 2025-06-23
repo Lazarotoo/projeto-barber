@@ -11,26 +11,21 @@
 }
 
 .inicio-header {
-  display: flex;
-  align-items: center;
-  justify-content: center; /* <-- centraliza o conteúdo */
-  background-color: #f8fafc;
-  padding: 1rem 1rem 0.5rem 1rem;
+  text-align: center;
+}
+
+.cliente-saudacao {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #2c5f83;
+  margin-bottom: 0.5rem;
+  margin-top: 0;
 }
 
 .inicio-title {
-  color: #0d141c;
-  font-size: clamp(1.25rem, 6vw, 2rem); /* adaptável */
-  font-weight: 700;
-  line-height: 1.5rem;
-  letter-spacing: -0.015em;
-  text-align: center;
-  white-space: nowrap;
-  padding: 0 1rem;
-
-  /* REMOVER ESTA LINHA ↓ */
-  /* flex: 1; */
+  margin-top: 0;
 }
+
 
 .inicio-grid {
   max-width: 360px; /* reduz o máximo da área do grid */
@@ -145,4 +140,16 @@
   font-size: 1rem; /* valor exemplo */
   font-weight: 700; /* opcional */
   letter-spacing: 0.015em; /* opcional */
+}
+
+/* Cabeçalho azul com saudação no mesmo estilo do perfil */
+
+.cliente-saudacao {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 10px;
+  padding: 1rem;
+  border-radius: 100px;
+  color: white;
+  background-color: #1e3c58;
 }

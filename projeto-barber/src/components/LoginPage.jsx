@@ -8,11 +8,10 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Se já estiver logado, pula para início
+  // Sempre que abrir a página de login, remove clienteLogado para "deslogar"
   useEffect(() => {
-    const logado = localStorage.getItem("clienteLogado");
-    if (logado) navigate("/inicio");
-  }, [navigate]);
+    localStorage.removeItem("clienteLogado");
+  }, []);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -35,20 +34,8 @@ export default function LoginPage() {
 
   return (
     <div className="root-container">
-      {/* ⬇️ Bloco hero-image igual ao HomePage.jsx */}
-      <div>
-        <div className="container">
-          <div className="container-padding">
-            <div className="hero-image"></div>
-          </div>
-        </div>
-      </div>
-
-      <h2 className="title">
-        Login
-        <br />
-        RBI BARBER
-      </h2>
+      <div className="hero-image"></div>
+      <h2 className="title">Login<br />RBI BARBER</h2>
 
       <form onSubmit={handleLogin}>
         <div className="input-group">

@@ -1,4 +1,3 @@
-// InicioPage.jsx
 import React, { useEffect, useState } from "react";
 import "./InicioPage.css";
 import { useNavigate } from "react-router-dom";
@@ -7,18 +6,15 @@ export default function InicioPage() {
   const navigate = useNavigate();
   const [clienteNome, setClienteNome] = useState("");
 
-  // Busca o cliente logado no localStorage
   useEffect(() => {
     const logado = JSON.parse(localStorage.getItem("clienteLogado"));
-    if (logado?.name) {
-      setClienteNome(logado.name);
-    } else {
-      // Se não estiver logado, redireciona para login
+    if (!logado?.name) {
       navigate("/login");
+    } else {
+      setClienteNome(logado.name);
     }
   }, [navigate]);
 
-  // Função para navegar com os dados da barbearia
   const handleNavigate = (barbershop) => {
     navigate("/select-barber", { state: barbershop });
   };
@@ -28,16 +24,8 @@ export default function InicioPage() {
       <div>
         <div className="inicio-header">
           {clienteNome && (
-            <p
-              style={{
-                fontSize: "1rem",
-                fontWeight: "500",
-                marginBottom: "0.25rem",
-                color: "#2c5f83",
-                textAlign: "center",
-              }}
-            >
-              Olá, {clienteNome} 👋
+            <p className="cliente-saudacao">
+              Olá, {clienteNome}
             </p>
           )}
           <h2 className="inicio-title">Selecione a Barbershop</h2>

@@ -1,14 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./HomePage.css";
 
 export default function HomePage() {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const logado = localStorage.getItem("clienteLogado");
-    if (logado) navigate("/inicio");
-  }, [navigate]);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -21,33 +16,41 @@ export default function HomePage() {
       return;
     }
 
-    const novosDados = { name, phone, email, password };
+    const novosDados = {
+      name,
+      phone,
+      email,
+      password,
+    };
+
+    // Busca os clientes já registrados (ou inicia com array vazio)
     const clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+
+    // Verifica se o email já está registrado
     const jaExiste = clientes.some((c) => c.email === email);
     if (jaExiste) {
       alert("Já existe um cliente com este e-mail.");
       return;
     }
 
+    // Adiciona novo cliente
     clientes.push(novosDados);
     localStorage.setItem("clientes", JSON.stringify(clientes));
+
+    // Salva cliente atual logado
     localStorage.setItem("clienteLogado", JSON.stringify(novosDados));
+
+    // Redireciona para início após registro
     navigate("/inicio");
   };
 
   return (
     <div className="root-container">
-      {/* Bloco da imagem que estava faltando */}
-      <div>
-        <div className="container">
-          <div className="container-padding">
-            <div className="hero-image"></div>
-          </div>
-        </div>
-      </div>
+      <div className="hero-image"></div>
 
       <h2 className="title">Bem-Vindo<br />a<br />RBI BARBER</h2>
 
+      {/* Campos controlados */}
       <div className="input-group">
         <label className="input-label">
           <input
