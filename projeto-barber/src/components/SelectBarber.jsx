@@ -1,27 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './SelectBarber.css';
 import CalendarioBarber from './CalendarioBarber';
-import { useNavigate } from 'react-router-dom';
+import ServicosBarber from './ServicosBarber';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const SelectBarber = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const barbershop = location.state;
+
+  useEffect(() => {
+    if (!barbershop) {
+      navigate('/inicio');
+    }
+  }, [barbershop, navigate]);
+
+  // Define barbeiros diferentes para cada barbearia
+  const getBarbersByBarbershop = (name) => {
+    if (name === 'RBI IGUAÇU') {
+      return [
+        { name: 'Gil', img: '/images/foto-gil-projeto.png' },
+        { name: 'Lucas', img: 'https://randomuser.me/api/portraits/men/62.jpg' },
+        { name: 'Douglas', img: 'https://randomuser.me/api/portraits/men/42.jpg' },
+        { name: 'André', img: 'https://randomuser.me/api/portraits/men/52.jpg' },
+      ];
+    } else if (name === 'Barbearia Central') {
+      return [
+        { name: 'Mykael', img: 'https://randomuser.me/api/portraits/men/53.jpg' },
+        { name: 'João', img: 'https://randomuser.me/api/portraits/men/63.jpg' },
+        { name: 'Renato', img: 'https://randomuser.me/api/portraits/men/43.jpg' },
+        { name: 'Eduardo', img: 'https://randomuser.me/api/portraits/men/73.jpg' },
+      ];
+    } else {
+      return []; // nenhuma barbearia válida
+    }
+  };
+
+  const barbers = getBarbersByBarbershop(barbershop?.name);
+
+  const servicos = [
+    { nome: 'Corte (Equipe)', preco: 35 },
+    { nome: 'Corte + Sobrancelha', preco: 50 },
+    { nome: 'Corte + Barba Terapia (Equipe)', preco: 70 },
+    { nome: 'Corte + Barba Express (Desenho Máquina de Acabamento)', preco: 60 },
+    { nome: 'Corte + Botox', preco: 110 },
+    { nome: 'Botox', preco: 80 },
+    { nome: 'Corte + Barba + Botox', preco: 145 },
+    { nome: 'Corte + Barba + Sobrancelhas', preco: 80 },
+    { nome: 'Limpeza Facial', preco: 30 },
+    { nome: 'Mechas Platinada', preco: 80 },
+    { nome: 'Platinado Global', preco: 140 },
+    { nome: 'Pigmentação de Barba', preco: 20 },
+    { nome: 'Barba Terapia', preco: 35 },
+    { nome: 'Corte + Mechas Platinada', preco: 115 },
+    { nome: 'Mechas Loira Natural', preco: 60 },
+    { nome: 'Corte + Mechas Loiras Natural', preco: 95 },
+    { nome: 'Corte + Barba + Sobrancelhas + Mechas Platinada', preco: 165 },
+    { nome: 'Corte + Sobrancelha + Mechas Platinada', preco: 130 },
+    { nome: 'Hidratação de Cabelo com Máscara (Térmica)', preco: 45 },
+    { nome: 'Pintura Global Cabelo (Cores a Escolher)', preco: 60 },
+    { nome: 'Sobrancelha', preco: 15 },
+  ];
+
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [showTimeSelector, setShowTimeSelector] = useState(false);
+  const [selectedService, setSelectedService] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [showSummary, setShowSummary] = useState(false);
 
   const handleBack = () => navigate(-1);
   const handleNavigateHome = () => navigate('/inicio');
   const handleNavigateAgenda = () => navigate('/agenda');
-  const handleNavigatePerfil = () => navigate('/perfil'); // Navega para Perfil
-
-  const barbers = [
-    { name: 'Barbeiro 1', img: 'https://randomuser.me/api/portraits/men/31.jpg' },
-    { name: 'Barbeiro 2', img: 'https://randomuser.me/api/portraits/men/41.jpg' },
-    { name: 'Barbeiro 3', img: 'https://randomuser.me/api/portraits/men/51.jpg' },
-    { name: 'Barbeiro 4', img: 'https://randomuser.me/api/portraits/men/61.jpg' },
-  ];
+  const handleNavigatePerfil = () => navigate('/perfil');
 
   const generateTimes = () => {
     const times = [];
@@ -34,32 +84,33 @@ const SelectBarber = () => {
   const closeAll = () => {
     setSelectedIndex(null);
     setSelectedDate(null);
+    setSelectedService(null);
     setSelectedTime(null);
-    setShowTimeSelector(false);
     setShowSummary(false);
   };
 
   const handleAgendar = () => {
-    if (selectedIndex !== null && selectedDate && selectedTime) {
+    if (selectedIndex !== null && selectedDate && selectedTime && selectedService) {
       const selectedBarber = barbers[selectedIndex].name;
 
       const agendamento = {
+        barbearia: barbershop?.name || 'Indefinida',
         barbeiro: selectedBarber,
         data: selectedDate,
         hora: selectedTime,
+        servico: selectedService.nome,
+        preco: selectedService.preco,
       };
 
       const agendamentosSalvos = JSON.parse(localStorage.getItem('agendamentos')) || [];
       agendamentosSalvos.push(agendamento);
       localStorage.setItem('agendamentos', JSON.stringify(agendamentosSalvos));
 
-      alert(`✅ Agendamento confirmado com ${selectedBarber} em ${selectedDate} às ${selectedTime}`);
-
+      alert(`✅ Agendamento confirmado com ${selectedBarber} na ${barbershop?.name} em ${selectedDate} às ${selectedTime}`);
       navigate('/agenda');
-
       closeAll();
     } else {
-      alert("❗ Selecione barbeiro, data e horário antes de agendar.");
+      alert("❗ Selecione barbeiro, data, serviço e horário antes de agendar.");
     }
   };
 
@@ -67,20 +118,20 @@ const SelectBarber = () => {
     const alreadySelected = selectedIndex === index;
     setSelectedIndex(alreadySelected ? null : index);
     setSelectedDate(null);
+    setSelectedService(null);
     setSelectedTime(null);
-    setShowTimeSelector(false);
     setShowSummary(false);
   };
 
   const handleDateSelect = (date) => {
     setSelectedDate(date.toLocaleDateString());
-    setShowTimeSelector(true);
+    setSelectedService(null);
+    setSelectedTime(null);
     setShowSummary(false);
   };
 
   const handleTimeSelect = (time) => {
     setSelectedTime(time);
-    setShowTimeSelector(false);
     setShowSummary(true);
   };
 
@@ -92,7 +143,7 @@ const SelectBarber = () => {
       </header>
 
       <main>
-        <h2 className="selectbarber-subtitle">Barbeiros Disponíveis</h2>
+        <h2 className="selectbarber-subtitle">Barbearia: {barbershop?.name}</h2>
 
         {barbers.map((barber, index) => (
           <section className="barber-card" key={index}>
@@ -131,7 +182,14 @@ const SelectBarber = () => {
                 </div>
               )}
 
-              {selectedIndex === index && showTimeSelector && (
+              {selectedIndex === index && selectedDate && !selectedService && (
+                <ServicosBarber
+                  servicos={servicos}
+                  onSelecionar={(servico) => setSelectedService(servico)}
+                />
+              )}
+
+              {selectedIndex === index && selectedService && !selectedTime && (
                 <div className="time-selector" style={{ marginTop: '1rem' }}>
                   <h4>Horários disponíveis para {selectedDate}</h4>
                   <div className="time-buttons">
@@ -149,12 +207,14 @@ const SelectBarber = () => {
                 </div>
               )}
 
-              {selectedIndex === index && showSummary && selectedDate && selectedTime && (
+              {selectedIndex === index && showSummary && selectedDate && selectedTime && selectedService && (
                 <section className="confirm-section" style={{ marginTop: '1rem' }}>
                   <h3>Resumo do Agendamento</h3>
+                  <p><strong>Barbearia:</strong> {barbershop?.name}</p>
                   <p><strong>Barbeiro:</strong> {barber.name}</p>
                   <p><strong>Data:</strong> {selectedDate}</p>
                   <p><strong>Horário:</strong> {selectedTime}</p>
+                  <p><strong>Serviço:</strong> {selectedService.nome} - R$ {selectedService.preco.toFixed(2)}</p>
                   <button className="agendar-btn" onClick={handleAgendar}>Agendar agora</button>
                 </section>
               )}

@@ -86,34 +86,6 @@ export default function InicioPage() {
               </p>
             </div>
           </div>
-
-          {/* Barber 3 */}
-          <div className="inicio-barber-card">
-            <div
-              className="inicio-barber-image"
-              style={{
-                backgroundImage:
-                  'url("https://via.placeholder.com/400x250?text=Barbearia+3")',
-              }}
-            ></div>
-            <div>
-              <button
-                className="inicio-barber-name"
-                onClick={() =>
-                  handleNavigate({
-                    name: "Barber Gold",
-                    desc: "Rua das Rosas, 77 - Estação, Araucária - PR",
-                    image: "https://via.placeholder.com/400x250?text=Barbearia+3",
-                  })
-                }
-              >
-                Barber Gold
-              </button>
-              <p className="inicio-barber-desc">
-                Rua das Rosas, 77 - Estação, Araucária - PR
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
