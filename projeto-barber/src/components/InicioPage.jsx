@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./InicioPage.css";
 import { useNavigate } from "react-router-dom";
+import LogoutButton from "../components/LogoutButton";
 
 export default function InicioPage() {
   const navigate = useNavigate();
@@ -8,10 +9,10 @@ export default function InicioPage() {
 
   useEffect(() => {
     const logado = JSON.parse(localStorage.getItem("clienteLogado"));
-    if (!logado?.name) {
+    if (!logado?.nome) {
       navigate("/login");
     } else {
-      setClienteNome(logado.name);
+      setClienteNome(logado.nome);
     }
   }, [navigate]);
 
@@ -22,12 +23,14 @@ export default function InicioPage() {
   return (
     <div className="inicio-root">
       <div>
+        {/* Header com saudação e logout alinhados */}
         <div className="inicio-header">
-          {clienteNome && (
-            <p className="cliente-saudacao">
-              Olá, {clienteNome}
-            </p>
-          )}
+          <div className="header-top">
+            {clienteNome && (
+              <p className="cliente-saudacao">Olá, {clienteNome}</p>
+            )}
+            <LogoutButton />
+          </div>
           <h2 className="inicio-title">Selecione a Barbershop</h2>
         </div>
 
@@ -36,9 +39,7 @@ export default function InicioPage() {
           <div className="inicio-barber-card">
             <div
               className="inicio-barber-image"
-              style={{
-                backgroundImage: 'url("/images/RBI IGUAÇU FOTO.webp")',
-              }}
+              style={{ backgroundImage: 'url("/images/RBI IGUAÇU FOTO.webp")' }}
             ></div>
             <div>
               <button
@@ -64,8 +65,7 @@ export default function InicioPage() {
             <div
               className="inicio-barber-image"
               style={{
-                backgroundImage:
-                  'url("https://via.placeholder.com/400x250?text=Barbearia+2")',
+                 backgroundImage: 'url("/images/WhatsApp Image 2025-06-23 at 14.28.05.jpeg")',
               }}
             ></div>
             <div>
@@ -74,7 +74,7 @@ export default function InicioPage() {
                 onClick={() =>
                   handleNavigate({
                     name: "Barbearia Central",
-                    desc: "Av. das Nações, 123 - Centro, Araucária - PR",
+                    desc: "Rua Manoel Ribas, 1174 - Centro, Araucária - PR, 83702-035",
                     image: "https://via.placeholder.com/400x250?text=Barbearia+2",
                   })
                 }
@@ -82,7 +82,7 @@ export default function InicioPage() {
                 Barbearia Central
               </button>
               <p className="inicio-barber-desc">
-                Av. das Nações, 123 - Centro, Araucária - PR
+                Rua Manoel Ribas, 1174 - Centro, Araucária - PR, 83702-035
               </p>
             </div>
           </div>

@@ -1,0 +1,15 @@
+/* src/components/LogoutButton.css */
+.logout-button {
+  cursor: pointer;
+  padding: 8px 16px;
+  background-color: #1e3c58; /* você pode ajustar a cor para combinar com o layout */
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: red;
+}

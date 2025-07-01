@@ -14,11 +14,6 @@
 }
 
 .perfil-header {
-  display: flex;
-  align-items: center;
-  padding: 1rem 1rem 0.5rem 1rem; /* Igual ao SelectBarber */
-  background-color: #0d141c;
-  color: white;
   position: fixed;
   top: 0;
   left: 50%;
@@ -26,24 +21,34 @@
   z-index: 1000;
   width: 100vw;
   max-width: 400px;
+  height: 64px; /* mesmo valor usado no SelectBarber */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1e3c58;
+  color: white;
+  padding: 0 1rem;
   box-sizing: border-box;
-  /* altura dinâmica conforme conteúdo + padding */
 }
 
 .perfil-back {
+  position: absolute;
+  left: 0.1rem; /* igual ao SelectBarber */
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   color: white;
-  width: 3rem;
-  height: 3rem; /* Igual ao botão do SelectBarber */
   font-size: 1.5rem;
   cursor: pointer;
-  margin-right: 1rem;
+  width: 3rem;
+  height: 3rem;
   display: flex;
   justify-content: center;
   align-items: center;
   transition: color 0.3s ease;
 }
+
 
 .perfil-back:hover {
   color: #ccc;
@@ -127,7 +132,7 @@
   transform: translateX(-50%);
   width: 100vw;
   max-width: 400px;
-  background-color: #0d141c;
+  background-color: #1e3c58;
   padding: 1rem;
   box-shadow: 0 0 8px rgba(44, 95, 131, 0.2);
   box-sizing: border-box;

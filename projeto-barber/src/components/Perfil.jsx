@@ -7,27 +7,55 @@ const Perfil = () => {
   const [pontos, setPontos] = useState(0);
   const pontosParaCorteGratis = 100;
 
-  // Carrega os pontos do localStorage ao iniciar
   useEffect(() => {
-    const pontosSalvos = parseInt(localStorage.getItem('pontosCliente')) || 0;
-    setPontos(pontosSalvos);
-  }, []);
+    const carregarPontos = () => {
+      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+      if (!clienteLogado || !clienteLogado.uid) {
+        navigate('/login');
+        return;
+      }
+      const clientes = JSON.parse(localStorage.getItem('clientes')) || {};
+      const pontosSalvos = clientes[clienteLogado.uid]?.pontos || 0;
+      setPontos(pontosSalvos);
+    };
 
-  // Calcula quantos pontos faltam para o resgate
+    carregarPontos();
+
+    const handleStorageChange = (event) => {
+      if (event.key === 'clientes') {
+        carregarPontos();
+      }
+    };
+
+    const handlePontosAtualizados = () => {
+      carregarPontos();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('pontosAtualizados', handlePontosAtualizados);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('pontosAtualizados', handlePontosAtualizados);
+    };
+  }, [navigate]);
+
   const pontosFaltando = Math.max(pontosParaCorteGratis - pontos, 0);
 
-  // Lógica de resgate de corte grátis
   const handleResgatar = () => {
     if (pontos >= pontosParaCorteGratis) {
       alert('Parabéns! Você resgatou um corte grátis!');
-      localStorage.setItem('pontosCliente', pontos - pontosParaCorteGratis);
+      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+      const clientes = JSON.parse(localStorage.getItem('clientes')) || {};
+
+      clientes[clienteLogado.uid].pontos = pontos - pontosParaCorteGratis;
+      localStorage.setItem('clientes', JSON.stringify(clientes));
       setPontos(pontos - pontosParaCorteGratis);
     }
   };
 
   return (
     <div className="perfil-container">
-      {/* Cabeçalho fixo com botão de voltar */}
       <header className="perfil-header">
         <button
           className="perfil-back"
@@ -39,16 +67,17 @@ const Perfil = () => {
         <h1 className="perfil-title">Perfil do Cliente</h1>
       </header>
 
-      {/* Conteúdo principal com scroll interno se necessário */}
       <main className="perfil-main">
         <div className="pontos-display">
           <h2>Pontos acumulados</h2>
           <p className="pontos-num">{pontos}</p>
-          <p>Faltam <strong>{pontosFaltando}</strong> pontos para ganhar um corte grátis</p>
+          <p>
+            Faltam <strong>{pontosFaltando}</strong> pontos para ganhar um corte
+            grátis
+          </p>
         </div>
       </main>
 
-      {/* Rodapé fixo com botão de resgate */}
       <footer className="resgatar-container">
         <button
           className="resgatar-btn"

@@ -9,13 +9,19 @@ const SelectBarber = () => {
   const location = useLocation();
   const barbershop = location.state;
 
+  const [agendamentos, setAgendamentos] = useState([]);
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem('agendamentos')) || [];
+    setAgendamentos(saved);
+  }, []);
+
   useEffect(() => {
     if (!barbershop) {
       navigate('/inicio');
     }
   }, [barbershop, navigate]);
 
-  // Define barbeiros diferentes para cada barbearia
   const getBarbersByBarbershop = (name) => {
     if (name === 'RBI IGUAÇU') {
       return [
@@ -26,13 +32,13 @@ const SelectBarber = () => {
       ];
     } else if (name === 'Barbearia Central') {
       return [
-        { name: 'Mykael', img: 'https://randomuser.me/api/portraits/men/53.jpg' },
-        { name: 'João', img: 'https://randomuser.me/api/portraits/men/63.jpg' },
-        { name: 'Renato', img: 'https://randomuser.me/api/portraits/men/43.jpg' },
+        { name: 'Mikael', img: 'https://randomuser.me/api/portraits/men/53.jpg' },
+        { name: 'Ana', img: 'https://randomuser.me/api/portraits/men/63.jpg' },
+        { name: 'Vitor Eduardo', img: 'https://randomuser.me/api/portraits/men/43.jpg' },
         { name: 'Eduardo', img: 'https://randomuser.me/api/portraits/men/73.jpg' },
       ];
     } else {
-      return []; // nenhuma barbearia válida
+      return [];
     }
   };
 
@@ -93,6 +99,19 @@ const SelectBarber = () => {
     if (selectedIndex !== null && selectedDate && selectedTime && selectedService) {
       const selectedBarber = barbers[selectedIndex].name;
 
+      const isConflict = agendamentos.some(a =>
+        a.barbeiro === selectedBarber &&
+        a.data === selectedDate &&
+        a.hora === selectedTime
+      );
+
+      if (isConflict) {
+        alert("❗ Horário já agendado para esse barbeiro, escolha outro horário.");
+        return;
+      }
+
+      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado')) || {};
+
       const agendamento = {
         barbearia: barbershop?.name || 'Indefinida',
         barbeiro: selectedBarber,
@@ -100,11 +119,14 @@ const SelectBarber = () => {
         hora: selectedTime,
         servico: selectedService.nome,
         preco: selectedService.preco,
+        clienteEmail: clienteLogado.email || null,
+        clienteUid: clienteLogado.uid || null,
+        validado: false, // status inicial
       };
 
-      const agendamentosSalvos = JSON.parse(localStorage.getItem('agendamentos')) || [];
-      agendamentosSalvos.push(agendamento);
+      const agendamentosSalvos = [...agendamentos, agendamento];
       localStorage.setItem('agendamentos', JSON.stringify(agendamentosSalvos));
+      setAgendamentos(agendamentosSalvos);
 
       alert(`✅ Agendamento confirmado com ${selectedBarber} na ${barbershop?.name} em ${selectedDate} às ${selectedTime}`);
       navigate('/agenda');
@@ -193,16 +215,26 @@ const SelectBarber = () => {
                 <div className="time-selector" style={{ marginTop: '1rem' }}>
                   <h4>Horários disponíveis para {selectedDate}</h4>
                   <div className="time-buttons">
-                    {generateTimes().map((time) => (
-                      <button
-                        key={time}
-                        className={time === selectedTime ? 'selected' : ''}
-                        onClick={() => handleTimeSelect(time)}
-                        aria-pressed={time === selectedTime}
-                      >
-                        {time}
-                      </button>
-                    ))}
+                    {generateTimes().map((time) => {
+                      const isBooked = agendamentos.some(a =>
+                        a.barbeiro === barbers[selectedIndex].name &&
+                        a.data === selectedDate &&
+                        a.hora === time
+                      );
+
+                      return (
+                        <button
+                          key={time}
+                          className={time === selectedTime ? 'selected' : ''}
+                          onClick={() => !isBooked && handleTimeSelect(time)}
+                          disabled={isBooked}
+                          aria-pressed={time === selectedTime}
+                          title={isBooked ? 'Horário indisponível' : 'Horário disponível'}
+                        >
+                          {time}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}

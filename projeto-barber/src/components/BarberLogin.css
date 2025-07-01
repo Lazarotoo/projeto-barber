@@ -1,0 +1,50 @@
+.barber-login-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #1e3c58;
+  font-family: Arial, sans-serif;
+}
+
+.barber-login-form {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 300px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+.barber-login-form h2 {
+  margin-bottom: 1.5rem;
+  color: #1e3c58;
+}
+
+.barber-login-form input {
+  width: 100%;
+  padding: 0.7rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.barber-login-form button {
+  width: 100%;
+  padding: 0.7rem;
+  background-color: #1e3c58;
+  border: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.barber-login-form button:hover {
+  background-color: #163353;
+}
+
+.error {
+  color: red;
+  margin-bottom: 1rem;
+}

@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../firebase"; // Ajuste o caminho se necessário
 import "./HomePage.css";
 
 export default function HomePage() {
@@ -10,38 +13,43 @@ export default function HomePage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleRegisterClick = () => {
+  const handleRegisterClick = async () => {
     if (!name || !phone || !email || !password) {
       alert("Preencha todos os campos");
       return;
     }
 
-    const novosDados = {
-      name,
-      phone,
-      email,
-      password,
-    };
+    try {
+      // 1. Cria o usuário no Firebase Auth
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      const uid = cred.user.uid;
 
-    // Busca os clientes já registrados (ou inicia com array vazio)
-    const clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+      // 2. Salva os dados adicionais no Firestore
+      await setDoc(doc(db, "clientes", uid), {
+        nome: name,
+        telefone: phone,
+        email: email
+      });
 
-    // Verifica se o email já está registrado
-    const jaExiste = clientes.some((c) => c.email === email);
-    if (jaExiste) {
-      alert("Já existe um cliente com este e-mail.");
-      return;
+      // 3. Salva os dados no localStorage
+      const dadosCliente = {
+        uid,
+        nome: name,
+        telefone: phone,
+        email: email
+      };
+      localStorage.setItem("clienteLogado", JSON.stringify(dadosCliente));
+
+      // 4. Redireciona para a tela inicial
+      navigate("/inicio");
+
+    } catch (error) {
+      if (error.code === "auth/email-already-in-use") {
+        alert("Já existe um cliente com este e-mail.");
+      } else {
+        alert("Erro ao registrar: " + error.message);
+      }
     }
-
-    // Adiciona novo cliente
-    clientes.push(novosDados);
-    localStorage.setItem("clientes", JSON.stringify(clientes));
-
-    // Salva cliente atual logado
-    localStorage.setItem("clienteLogado", JSON.stringify(novosDados));
-
-    // Redireciona para início após registro
-    navigate("/inicio");
   };
 
   return (

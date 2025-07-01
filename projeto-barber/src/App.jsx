@@ -4,7 +4,10 @@ import LoginPage from "./components/LoginPage";
 import InicioPage from "./components/InicioPage";
 import SelectBarber from "./components/SelectBarber";
 import AgendaCliente from "./components/AgendaCliente";
-import Perfil from "./components/Perfil"; // Importando o componente Perfil
+import Perfil from "./components/Perfil";
+import PainelBarbeiro from "./components/PainelBarbeiro";
+import BarberLogin from "./components/BarberLogin";
+import PrivateRouteBarber from "./components/PrivateRouteBarber";
 
 function App() {
   return (
@@ -15,7 +18,17 @@ function App() {
         <Route path="/inicio" element={<InicioPage />} />
         <Route path="/select-barber" element={<SelectBarber />} />
         <Route path="/agenda" element={<AgendaCliente />} />
-        <Route path="/perfil" element={<Perfil />} /> {/* Nova rota para Perfil */}
+        <Route path="/perfil" element={<Perfil />} />
+
+        <Route path="/barber-login" element={<BarberLogin />} />
+        <Route
+          path="/barbeiros"
+          element={
+            <PrivateRouteBarber>
+              <PainelBarbeiro />
+            </PrivateRouteBarber>
+          }
+        />
       </Routes>
     </Router>
   );

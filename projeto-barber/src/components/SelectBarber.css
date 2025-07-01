@@ -8,23 +8,28 @@
 }
 
 .selectbarber-header {
+  position: relative;
   display: flex;
-  align-items: center;
-  padding: 1rem;
-  padding-bottom: 0.5rem;
-  background-color: #0d141c;
+  align-items: center;      /* Alinha verticalmente ao centro */
+  justify-content: center;  /* Centraliza o título */
+  height: 64px;             /* Altura fixa para facilitar o alinhamento */
+  background-color: #1e3c58;
   color: white;
+  padding: 0 1rem;
 }
 
 .selectbarber-icon {
+  position: absolute;
+  left: 0.1rem;                /* Fixa a seta à esquerda */
+  top: 50%;
+  transform: translateY(-50%); /* Centraliza verticalmente */
   background: none;
   border: none;
   color: white;
-  width: 3rem;
-  height: 3rem;
   font-size: 1.5rem;
   cursor: pointer;
 }
+
 
 .selectbarber-title {
   font-size: 1.125rem;
@@ -156,6 +161,13 @@
   background-color: white;
   border-color: black;
   color: black;
+}
+
+.time-buttons button:disabled {
+  background-color: #ddd;
+  border-color: #aaa;
+  color: #666;
+  cursor: pointer;
 }
 
 

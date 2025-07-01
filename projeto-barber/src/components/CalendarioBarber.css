@@ -108,3 +108,9 @@
   background-color: white;
   color: black;
 }
+/* Remove sublinhado dos dias da semana */
+.react-calendar__month-view__weekdays abbr {
+  text-decoration: none;
+  border: none;
+}
+
