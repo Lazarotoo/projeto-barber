@@ -100,21 +100,61 @@ h1 {
 }
 
 .btn-validar {
-  background-color: #0a2540; /* tom escuro do azul */
-  color: #f0f6fc; /* quase branco */
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 6px 10px;
   font-weight: 700;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.25s ease, transform 0.15s ease;
-  box-shadow: 0 2px 6px rgb(10 37 64 / 0.3);
+  border: none;
+  box-shadow: 0 2px 6px rgba(10, 37, 64, 0.25);
+  transition: background-color 0.3s ease, transform 0.15s ease, box-shadow 0.3s ease;
+  font-size: 0.85rem;
+  min-width: 55px;
+  margin: 0 6px 6px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+}
+
+/* Diferenciar as ações por cores */
+.btn-validar:nth-child(1) {
+  background-color: #28a745; /* verde OK */
+  color: white;
+}
+.btn-validar:nth-child(1):hover {
+  background-color: #218838;
+}
+
+.btn-validar:nth-child(2) {
+  background-color: #ffc107; /* amarelo Alterar */
+  color: #212529;
+}
+.btn-validar:nth-child(2):hover {
+  background-color: #e0a800;
+  color: #fff;
+}
+
+.btn-validar:nth-child(3) {
+  background-color: #dc3545; /* vermelho Cancelar */
+  color: white;
+}
+.btn-validar:nth-child(3):hover {
+  background-color: #c82333;
 }
 
 .btn-validar:hover {
-  background-color: #163a75;
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgb(10 37 64 / 0.5);
+  box-shadow: 0 6px 15px rgba(10, 37, 64, 0.5);
+}
+
+/* Ajustes responsivos para telas pequenas */
+@media (max-width: 600px) {
+  .btn-validar {
+    min-width: 48px;
+    padding: 5px 8px;
+    font-size: 0.75rem;
+    margin-bottom: 5px;
+  }
 }
 
 .filtros {
@@ -159,22 +199,20 @@ h1 {
 
 /* Input mês menor e ícone calendário mais à esquerda */
 .filtros input[type="month"] {
-  width: 150px; /* Largura que caiba mês e ano inteiros */
+  width: 150px;
   margin-top: 0.5rem;
-  padding: 8px 40px 8px 12px; /* Espaço extra no padding direito para o ícone */
+  padding: 8px 40px 8px 12px;
   font-size: 1rem;
   border: 2px solid #1e3c58;
   border-radius: 10px;
   background-color: white;
   background-image: url('data:image/svg+xml;utf8,<svg fill="%232c5f83" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h14c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H5V9h14v9z"/></svg>');
   background-repeat: no-repeat;
-  background-position: right 12px center; /* Ícone alinhado à direita, 12px da borda */
+  background-position: right 12px center;
   background-size: 16px 16px;
   color: #1e3c58;
   transition: border-color 0.25s ease;
 }
-
-
 
 .filtros select:focus,
 .filtros input[type="month"]:focus {
@@ -190,4 +228,162 @@ h1 {
   color: #1e3c58;
   font-weight: 600;
   user-select: none;
+}
+
+/* Fundo escuro semitransparente para o modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(44, 95, 131, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Container branco do modal com borda arredondada */
+.modal-content {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  width: fit-content;
+  min-width: 360px;
+  max-width: 90vw;
+  box-shadow: 0 8px 24px rgba(44, 95, 131, 0.25);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #000;
+}
+
+/* Título do modal */
+.modal-content h2 {
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  font-size: 1.8rem;
+}
+
+/* Estilo dos labels para organizar inputs */
+.modal-content label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #2c5f83;
+}
+
+/* Inputs do modal com fundo claro e borda suave */
+.modal-content input[type="text"],
+.modal-content input[type="time"] {
+  margin-top: 0.5rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 2px solid #1e3c58;
+  background-color: #f0f6fc;
+  font-size: 1rem;
+  color: #1e3c58;
+  transition: border-color 0.3s ease;
+}
+
+/* Focus nos inputs */
+.modal-content input[type="text"]:focus,
+.modal-content input[type="time"]:focus {
+  outline: none;
+  border-color: #163a75;
+  box-shadow: 0 0 6px #163a75aa;
+}
+
+/* Estiliza o input do react-datepicker */
+.react-datepicker-wrapper {
+  display: inline-block;
+  width: 100%;
+}
+
+.react-datepicker__input-container input {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 2px solid #1e3c58;
+  background-color: #f0f6fc;
+  font-size: 1rem;
+  color: #1e3c58;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.react-datepicker__input-container input:focus {
+  outline: none;
+  border-color: #163a75;
+  box-shadow: 0 0 6px #163a75aa;
+}
+
+/* Ajuste do popper/calendário */
+.react-datepicker {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(44, 95, 131, 0.25);
+  border: 1px solid #1e3c58;
+  background: white;
+  padding: 0.5rem;
+}
+
+/* Ícone calendário alinhado e cursor pointer */
+label > div {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Container dos botões alinhados lado a lado */
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 2rem;
+  flex-wrap: nowrap;
+}
+
+.modal-buttons .btn-validar {
+  min-width: 120px;
+  flex: none;
+  padding: 10px 16px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  font-size: 1rem;
+  box-shadow: 0 3px 8px rgba(10, 37, 64, 0.25);
+  transition: background-color 0.3s ease, transform 0.15s ease, box-shadow 0.3s ease;
+  background-color: #0a2540;
+  color: #f0f6fc;
+  white-space: nowrap;
+}
+
+.modal-buttons .btn-validar:hover {
+  background-color: #163a75;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(10, 37, 64, 0.5);
+}
+
+.modal-buttons .btn-validar.cancelar {
+  background-color: #dc3545;
+  color: white;
+}
+
+.modal-buttons .btn-validar.cancelar:hover {
+  background-color: #c82333;
+}
+
+/* Ajuste para telas muito pequenas */
+@media (max-width: 400px) {
+  .modal-buttons {
+    flex-direction: column;
+  }
+  .modal-buttons .btn-validar {
+    width: 100%;
+    min-width: auto;
+  }
 }

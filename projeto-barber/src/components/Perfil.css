@@ -29,6 +29,7 @@
   color: white;
   padding: 0 1rem;
   box-sizing: border-box;
+  
 }
 
 .perfil-back {
@@ -59,10 +60,12 @@
   font-weight: 700;
   flex: 1;
   text-align: center;
-  user-select: none;
   display: flex;
+  align-items: center;
   justify-content: center;
-  align-items: center; /* Centraliza verticalmente */
+  height: 64px;
+  margin: 0; /* remove espaçamentos verticais */
+  padding: 0; /* Centraliza verticalmente */
 }
 
 .perfil-main {

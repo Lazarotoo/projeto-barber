@@ -3,6 +3,8 @@ import './SelectBarber.css';
 import CalendarioBarber from './CalendarioBarber';
 import ServicosBarber from './ServicosBarber';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
+import { db } from "../firebase";  // ajuste o caminho se necessário
 
 const SelectBarber = () => {
   const navigate = useNavigate();
@@ -12,8 +14,20 @@ const SelectBarber = () => {
   const [agendamentos, setAgendamentos] = useState([]);
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('agendamentos')) || [];
-    setAgendamentos(saved);
+    const fetchAgendamentos = async () => {
+      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado')) || {};
+      if (!clienteLogado.uid) return;
+
+      // Busca agendamentos do usuário para controlar conflitos
+      const q = query(collection(db, 'agendamentos'), where('clienteUid', '==', clienteLogado.uid));
+      const querySnapshot = await getDocs(q);
+      const agendamentosData = [];
+      querySnapshot.forEach(doc => {
+        agendamentosData.push(doc.data());
+      });
+      setAgendamentos(agendamentosData);
+    };
+    fetchAgendamentos();
   }, []);
 
   useEffect(() => {
@@ -32,10 +46,9 @@ const SelectBarber = () => {
       ];
     } else if (name === 'Barbearia Central') {
       return [
-        { name: 'Mikael', img: 'https://randomuser.me/api/portraits/men/53.jpg' },
-        { name: 'Ana', img: 'https://randomuser.me/api/portraits/men/63.jpg' },
-        { name: 'Vitor Eduardo', img: 'https://randomuser.me/api/portraits/men/43.jpg' },
-        { name: 'Eduardo', img: 'https://randomuser.me/api/portraits/men/73.jpg' },
+        { name: 'Mikael', img: '/images/FOTO-MIKAEL.jpeg'},
+        { name: 'Ana', img: '/images/FOTO-ANA.jpeg'},
+        { name: 'Vitor Eduardo', img: '/images/FOTO-VICTOR.jpeg'},
       ];
     } else {
       return [];
@@ -95,10 +108,11 @@ const SelectBarber = () => {
     setShowSummary(false);
   };
 
-  const handleAgendar = () => {
+  const handleAgendar = async () => {
     if (selectedIndex !== null && selectedDate && selectedTime && selectedService) {
       const selectedBarber = barbers[selectedIndex].name;
 
+      // Verifica se o horário já está ocupado para esse barbeiro (no agendamento do usuário)
       const isConflict = agendamentos.some(a =>
         a.barbeiro === selectedBarber &&
         a.data === selectedDate &&
@@ -110,27 +124,30 @@ const SelectBarber = () => {
         return;
       }
 
-      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado')) || {};
+      try {
+        const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado')) || {};
 
-      const agendamento = {
-        barbearia: barbershop?.name || 'Indefinida',
-        barbeiro: selectedBarber,
-        data: selectedDate,
-        hora: selectedTime,
-        servico: selectedService.nome,
-        preco: selectedService.preco,
-        clienteEmail: clienteLogado.email || null,
-        clienteUid: clienteLogado.uid || null,
-        validado: false, // status inicial
-      };
+        const agendamento = {
+          barbearia: barbershop?.name || 'Indefinida',
+          barbeiro: selectedBarber,
+          data: selectedDate,
+          hora: selectedTime,
+          servico: selectedService.nome,
+          preco: selectedService.preco,
+          clienteEmail: clienteLogado.email || null,
+          clienteUid: clienteLogado.uid || null,
+          validado: false,
+        };
 
-      const agendamentosSalvos = [...agendamentos, agendamento];
-      localStorage.setItem('agendamentos', JSON.stringify(agendamentosSalvos));
-      setAgendamentos(agendamentosSalvos);
+        await addDoc(collection(db, 'agendamentos'), agendamento);
 
-      alert(`✅ Agendamento confirmado com ${selectedBarber} na ${barbershop?.name} em ${selectedDate} às ${selectedTime}`);
-      navigate('/agenda');
-      closeAll();
+        alert(`✅ Agendamento confirmado com ${selectedBarber} na ${barbershop?.name} em ${selectedDate} às ${selectedTime}`);
+        navigate('/agenda');
+        closeAll();
+
+      } catch (error) {
+        alert('Erro ao agendar: ' + error.message);
+      }
     } else {
       alert("❗ Selecione barbeiro, data, serviço e horário antes de agendar.");
     }

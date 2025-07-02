@@ -36,6 +36,12 @@
   font-weight: 700;
   flex: 1;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 64px;
+  margin: 0; /* remove espaçamentos verticais */
+  padding: 0;
 }
 
 .selectbarber-subtitle {
