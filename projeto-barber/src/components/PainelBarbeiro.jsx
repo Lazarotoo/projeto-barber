@@ -1,24 +1,25 @@
+// PainelBarbeiro.jsx
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { collection, getDocs, doc, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
+import { db } from "../firebase";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { BsCalendarDate } from "react-icons/bs";
+import "./PainelBarbeiro.css";
 
 export default function PainelBarbeiro() {
   const navigate = useNavigate();
   const [agendamentos, setAgendamentos] = useState([]);
   const [barbeiroFiltro, setBarbeiroFiltro] = useState("");
   const [mesFiltro, setMesFiltro] = useState("");
-
-  // Modal estados
   const [modalAberto, setModalAberto] = useState(false);
   const [agendamentoEditando, setAgendamentoEditando] = useState(null);
   const [novoServico, setNovoServico] = useState("");
   const [novaData, setNovaData] = useState(new Date());
   const [novoHorario, setNovoHorario] = useState("");
 
-  // Funções conversão data string <-> Date
   const converteParaDate = (dataStr) => {
     const [dia, mes, ano] = dataStr.split("/");
     return new Date(`${ano}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}`);
@@ -39,9 +40,10 @@ export default function PainelBarbeiro() {
       return;
     }
 
-    const fetchAgendamentos = () => {
-      const agendamentosSalvos = JSON.parse(localStorage.getItem("agendamentos")) || [];
-      setAgendamentos(agendamentosSalvos);
+    const fetchAgendamentos = async () => {
+      const querySnapshot = await getDocs(collection(db, "agendamentos"));
+      const agendamentosData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAgendamentos(agendamentosData);
     };
 
     fetchAgendamentos();
@@ -49,53 +51,57 @@ export default function PainelBarbeiro() {
     return () => clearInterval(interval);
   }, [navigate]);
 
-  const barbeirosUnicos = Array.from(new Set(agendamentos.map((a) => a.barbeiro))).sort();
-
-  const isDuplicate = (barbeiro, data, hora, indexAtual) => {
-    const count = agendamentos.filter(
-      (a, i) => i !== indexAtual && a.barbeiro === barbeiro && a.data === data && a.hora === hora
-    ).length;
-    return count > 0;
-  };
-
-  const handleValidar = (index) => {
+  const handleValidar = async (index) => {
     const agend = agendamentos[index];
-    if (agend.validado) {
-      alert("Este agendamento já foi validado.");
-      return;
-    }
+    if (agend.validado) return alert("Este agendamento já foi validado.");
 
-    const novosAgendamentos = [...agendamentos];
-    novosAgendamentos[index].validado = true;
-    setAgendamentos(novosAgendamentos);
-    localStorage.setItem("agendamentos", JSON.stringify(novosAgendamentos));
+    try {
+      await updateDoc(doc(db, "agendamentos", agend.id), { validado: true });
 
-    let clientes = JSON.parse(localStorage.getItem("clientes")) || {};
-    const clienteUid = agend.clienteUid;
-    if (clienteUid) {
-      if (!clientes[clienteUid]) {
-        clientes[clienteUid] = { pontos: 0 };
+      const clienteRef = doc(db, "clientes", agend.clienteUid);
+      const clienteSnap = await getDoc(clienteRef);
+
+      if (clienteSnap.exists()) {
+        const clienteData = clienteSnap.data();
+        const pontosAtuais = clienteData.pontos || 0;
+        const novosPontos = pontosAtuais + 10;
+
+        await updateDoc(clienteRef, { pontos: novosPontos });
+
+        const clienteLocal = JSON.parse(localStorage.getItem("clienteLogado"));
+        if (clienteLocal && clienteLocal.uid === agend.clienteUid) {
+          const clientes = JSON.parse(localStorage.getItem("clientes")) || {};
+          clientes[clienteLocal.uid] = { ...clienteLocal, pontos: novosPontos };
+          localStorage.setItem("clientes", JSON.stringify(clientes));
+          localStorage.setItem("clienteLogado", JSON.stringify({ ...clienteLocal, pontos: novosPontos }));
+
+          window.dispatchEvent(new Event("pontosAtualizados"));
+        }
       }
-      clientes[clienteUid].pontos = (clientes[clienteUid].pontos || 0) + 10;
-      localStorage.setItem("clientes", JSON.stringify(clientes));
-      window.dispatchEvent(new Event("pontosAtualizados"));
-    }
 
-    setAgendamentos(novosAgendamentos.filter((_, i) => i !== index));
-    alert("Agendamento validado e 10 pontos adicionados ao cliente.");
-  };
-
-  const handleCancelar = (index) => {
-    if (window.confirm("Tem certeza que deseja cancelar este agendamento?")) {
       const novos = [...agendamentos];
-      novos.splice(index, 1);
+      novos[index].validado = true;
       setAgendamentos(novos);
-      localStorage.setItem("agendamentos", JSON.stringify(novos));
-      alert("Agendamento cancelado.");
+
+      alert("Agendamento validado e pontos adicionados.");
+    } catch (error) {
+      alert("Erro ao validar: " + error.message);
     }
   };
 
-  // Abre modal e preenche estados com dados atuais do agendamento
+  const handleCancelar = async (index) => {
+    if (!window.confirm("Cancelar este agendamento?")) return;
+
+    try {
+      await deleteDoc(doc(db, "agendamentos", agendamentos[index].id));
+      const novos = agendamentos.filter((_, i) => i !== index);
+      setAgendamentos(novos);
+      alert("Agendamento cancelado.");
+    } catch (error) {
+      alert("Erro ao cancelar: " + error.message);
+    }
+  };
+
   const abrirModalAlterar = (index) => {
     const agendamento = agendamentos[index];
     setAgendamentoEditando({ ...agendamento, index });
@@ -105,35 +111,32 @@ export default function PainelBarbeiro() {
     setModalAberto(true);
   };
 
-  // Salvar alterações feitas no modal
-  const salvarAlteracao = () => {
-    if (!novoServico || !novaData || !novoHorario) {
-      alert("Preencha todos os campos.");
-      return;
+  const salvarAlteracao = async () => {
+    if (!novoServico || !novaData || !novoHorario) return alert("Preencha todos os campos.");
+
+    try {
+      const dataFormatada = converteParaString(novaData);
+      const agend = agendamentoEditando;
+
+      await updateDoc(doc(db, "agendamentos", agend.id), {
+        servico: novoServico,
+        data: dataFormatada,
+        hora: novoHorario,
+      });
+
+      const novos = [...agendamentos];
+      novos[agend.index] = { ...novos[agend.index], servico: novoServico, data: dataFormatada, hora: novoHorario };
+      setAgendamentos(novos);
+      setModalAberto(false);
+      alert("Agendamento alterado com sucesso.");
+    } catch (error) {
+      alert("Erro ao salvar: " + error.message);
     }
-
-    const dataFormatada = converteParaString(novaData);
-
-    if (isDuplicate(agendamentoEditando.barbeiro, dataFormatada, novoHorario, agendamentoEditando.index)) {
-      alert("Já existe um agendamento para este barbeiro, data e horário. Escolha outro horário.");
-      return;
-    }
-
-    const novos = [...agendamentos];
-    novos[agendamentoEditando.index] = {
-      ...novos[agendamentoEditando.index],
-      servico: novoServico,
-      data: dataFormatada,
-      hora: novoHorario,
-    };
-
-    setAgendamentos(novos);
-    localStorage.setItem("agendamentos", JSON.stringify(novos));
-    setModalAberto(false);
-    alert("Agendamento alterado com sucesso.");
   };
 
-  const agendamentosFiltrados = agendamentos.filter((a) => {
+  const barbeirosUnicos = [...new Set(agendamentos.map(a => a.barbeiro))].sort();
+
+  const agendamentosFiltrados = agendamentos.filter(a => {
     if (barbeiroFiltro && a.barbeiro !== barbeiroFiltro) return false;
     if (mesFiltro) {
       const [, mes, ano] = a.data.split("/");
@@ -142,10 +145,8 @@ export default function PainelBarbeiro() {
     return true;
   });
 
-  const totalCortes = agendamentosFiltrados.filter((a) => a.validado).length;
-  const totalValor = agendamentosFiltrados
-    .filter((a) => a.validado)
-    .reduce((acc, a) => acc + (a.preco || 0), 0);
+  const totalCortes = agendamentosFiltrados.filter(a => a.validado).length;
+  const totalValor = agendamentosFiltrados.filter(a => a.validado).reduce((acc, a) => acc + (a.preco || 0), 0);
 
   return (
     <div className="painel-container">
@@ -156,11 +157,7 @@ export default function PainelBarbeiro() {
           Filtrar por barbeiro:
           <select value={barbeiroFiltro} onChange={(e) => setBarbeiroFiltro(e.target.value)}>
             <option value="">Todos</option>
-            {barbeirosUnicos.map((b, i) => (
-              <option key={i} value={b}>
-                {b}
-              </option>
-            ))}
+            {barbeirosUnicos.map((b, i) => <option key={i} value={b}>{b}</option>)}
           </select>
         </label>
 
@@ -171,12 +168,8 @@ export default function PainelBarbeiro() {
       </div>
 
       <div className="resumo">
-        <p>
-          <strong>Total de cortes validados:</strong> {totalCortes}
-        </p>
-        <p>
-          <strong>Total recebido:</strong> R$ {totalValor.toFixed(2)}
-        </p>
+        <p><strong>Total de cortes validados:</strong> {totalCortes}</p>
+        <p><strong>Total recebido:</strong> R$ {totalValor.toFixed(2)}</p>
       </div>
 
       {agendamentosFiltrados.length === 0 ? (
@@ -195,36 +188,25 @@ export default function PainelBarbeiro() {
             </tr>
           </thead>
           <tbody>
-            {agendamentosFiltrados.map((agendamento, index) => {
-              const isConflito = isDuplicate(agendamento.barbeiro, agendamento.data, agendamento.hora, index);
-              return (
-                <tr key={index} className={isConflito ? "conflito" : ""}>
-                  <td data-label="Barbearia">{agendamento.barbearia}</td>
-                  <td data-label="Barbeiro">{agendamento.barbeiro}</td>
-                  <td data-label="Data">{agendamento.data}</td>
-                  <td data-label="Hora">{agendamento.hora}</td>
-                  <td data-label="Serviço">{agendamento.servico}</td>
-                  <td data-label="Valor">R$ {agendamento.preco?.toFixed(2) || "0.00"}</td>
-                  <td data-label="Ações">
-                    {agendamento.validado ? (
-                      "Validado"
-                    ) : (
-                      <>
-                        <button className="btn-validar" onClick={() => handleValidar(index)}>
-                          OK
-                        </button>
-                        <button className="btn-validar" onClick={() => abrirModalAlterar(index)}>
-                          Alterar
-                        </button>
-                        <button className="btn-validar" onClick={() => handleCancelar(index)}>
-                          Cancelar
-                        </button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
+            {agendamentosFiltrados.map((ag, idx) => (
+              <tr key={idx}>
+                <td>{ag.barbearia}</td>
+                <td>{ag.barbeiro}</td>
+                <td>{ag.data}</td>
+                <td>{ag.hora}</td>
+                <td>{ag.servico}</td>
+                <td>R$ {ag.preco?.toFixed(2) || "0.00"}</td>
+                <td>
+                  {ag.validado ? "Validado" : (
+                    <div className="acoes-botoes">
+                      <button className="btn-validar validar" onClick={() => handleValidar(idx)}>OK</button>
+                      <button className="btn-validar alterar" onClick={() => abrirModalAlterar(idx)}>Alterar</button>
+                      <button className="btn-validar cancelar" onClick={() => handleCancelar(idx)}>Cancelar</button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       )}
@@ -233,12 +215,10 @@ export default function PainelBarbeiro() {
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>Alterar Agendamento</h2>
-
             <label>
               Serviço:
               <input type="text" value={novoServico} onChange={(e) => setNovoServico(e.target.value)} />
             </label>
-
             <label>
               Data:
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -246,26 +226,18 @@ export default function PainelBarbeiro() {
                 <DatePicker
                   selected={novaData}
                   onChange={(date) => setNovaData(date)}
-                  dateFormat="dd 'de' MMMM 'de' yyyy"
+                  dateFormat="dd/MM/yyyy"
                   locale="pt-BR"
-                  placeholderText="Selecione uma data"
-                  withPortal
                 />
               </div>
             </label>
-
             <label>
               Horário:
               <input type="time" value={novoHorario} onChange={(e) => setNovoHorario(e.target.value)} />
             </label>
-
             <div className="modal-buttons">
-              <button onClick={salvarAlteracao} className="btn-validar">
-                Salvar
-              </button>
-              <button onClick={() => setModalAberto(false)} className="btn-validar cancelar">
-                Cancelar
-              </button>
+              <button className="btn-validar validar" onClick={salvarAlteracao}>Salvar</button>
+              <button className="btn-validar cancelar" onClick={() => setModalAberto(false)}>Cancelar</button>
             </div>
           </div>
         </div>

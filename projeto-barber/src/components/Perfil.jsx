@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import './Perfil.css';
 import { useNavigate } from 'react-router-dom';
+import { doc,  updateDoc, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase";
 
 const Perfil = () => {
   const navigate = useNavigate();
@@ -8,49 +10,43 @@ const Perfil = () => {
   const pontosParaCorteGratis = 100;
 
   useEffect(() => {
-    const carregarPontos = () => {
-      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-      if (!clienteLogado || !clienteLogado.uid) {
-        navigate('/login');
-        return;
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    if (!clienteLogado || !clienteLogado.uid) {
+      navigate('/login');
+      return;
+    }
+
+    const clienteRef = doc(db, "clientes", clienteLogado.uid);
+
+    // Atualiza pontos em tempo real se mudar no Firestore
+    const unsubscribe = onSnapshot(clienteRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setPontos(docSnap.data().pontos || 0);
+      } else {
+        setPontos(0);
       }
-      const clientes = JSON.parse(localStorage.getItem('clientes')) || {};
-      const pontosSalvos = clientes[clienteLogado.uid]?.pontos || 0;
-      setPontos(pontosSalvos);
-    };
+    }, (error) => {
+      console.error("Erro ao escutar pontos:", error);
+    });
 
-    carregarPontos();
-
-    const handleStorageChange = (event) => {
-      if (event.key === 'clientes') {
-        carregarPontos();
-      }
-    };
-
-    const handlePontosAtualizados = () => {
-      carregarPontos();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('pontosAtualizados', handlePontosAtualizados);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('pontosAtualizados', handlePontosAtualizados);
-    };
+    return () => unsubscribe();
   }, [navigate]);
 
   const pontosFaltando = Math.max(pontosParaCorteGratis - pontos, 0);
 
-  const handleResgatar = () => {
+  const handleResgatar = async () => {
     if (pontos >= pontosParaCorteGratis) {
-      alert('Parabéns! Você resgatou um corte grátis!');
       const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-      const clientes = JSON.parse(localStorage.getItem('clientes')) || {};
+      const clienteRef = doc(db, "clientes", clienteLogado.uid);
+      const novosPontos = pontos - pontosParaCorteGratis;
 
-      clientes[clienteLogado.uid].pontos = pontos - pontosParaCorteGratis;
-      localStorage.setItem('clientes', JSON.stringify(clientes));
-      setPontos(pontos - pontosParaCorteGratis);
+      try {
+        await updateDoc(clienteRef, { pontos: novosPontos });
+        alert('Parabéns! Você resgatou um corte grátis!');
+        setPontos(novosPontos);
+      } catch (error) {
+        alert("Erro ao atualizar pontos: " + error.message);
+      }
     }
   };
 

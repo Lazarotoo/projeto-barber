@@ -14,43 +14,45 @@ export default function HomePage() {
   const [password, setPassword] = useState("");
 
   const handleRegisterClick = async () => {
-    if (!name || !phone || !email || !password) {
-      alert("Preencha todos os campos");
-      return;
+  if (!name || !phone || !email || !password) {
+    alert("Preencha todos os campos");
+    return;
+  }
+
+  try {
+    // 1. Cria o usuário no Firebase Auth
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    const uid = cred.user.uid;
+
+    // 2. Salva os dados adicionais no Firestore, já com pontos inicializados
+    await setDoc(doc(db, "clientes", uid), {
+      nome: name,
+      telefone: phone,
+      email: email,
+      pontos: 0
+    });
+
+    // 3. Salva os dados no localStorage
+    const dadosCliente = {
+      uid,
+      nome: name,
+      telefone: phone,
+      email: email,
+      pontos: 0
+    };
+    localStorage.setItem("clienteLogado", JSON.stringify(dadosCliente));
+
+    // 4. Redireciona para a tela inicial
+    navigate("/inicio");
+
+  } catch (error) {
+    if (error.code === "auth/email-already-in-use") {
+      alert("Já existe um cliente com este e-mail.");
+    } else {
+      alert("Erro ao registrar: " + error.message);
     }
-
-    try {
-      // 1. Cria o usuário no Firebase Auth
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-      const uid = cred.user.uid;
-
-      // 2. Salva os dados adicionais no Firestore
-      await setDoc(doc(db, "clientes", uid), {
-        nome: name,
-        telefone: phone,
-        email: email
-      });
-
-      // 3. Salva os dados no localStorage
-      const dadosCliente = {
-        uid,
-        nome: name,
-        telefone: phone,
-        email: email
-      };
-      localStorage.setItem("clienteLogado", JSON.stringify(dadosCliente));
-
-      // 4. Redireciona para a tela inicial
-      navigate("/inicio");
-
-    } catch (error) {
-      if (error.code === "auth/email-already-in-use") {
-        alert("Já existe um cliente com este e-mail.");
-      } else {
-        alert("Erro ao registrar: " + error.message);
-      }
-    }
-  };
+  }
+};
 
   return (
     <div className="root-container">
