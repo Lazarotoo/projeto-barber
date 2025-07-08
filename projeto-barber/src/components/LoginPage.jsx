@@ -10,44 +10,52 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [erro, setErro] = useState(null);
 
   useEffect(() => {
+    // Limpa localStorage para garantir que não fique info antiga
     localStorage.removeItem("clienteLogado");
     localStorage.removeItem("usuarioTipo");
   }, []);
 
-  // Credenciais fixas dos barbeiros (alterar conforme precisar)
-  const barbeiroEmail = "barbeiro@barbearia.com";
-  const barbeiroSenha = "123456";
-
   const handleLogin = async (e) => {
     e.preventDefault();
+    setErro(null);
 
-    // Primeiro verifica se é barbeiro:
-    if (email === barbeiroEmail && password === barbeiroSenha) {
-      localStorage.setItem("usuarioTipo", "barbeiro");
-      navigate("/barbeiros"); // redireciona para painel dos barbeiros
-      return;
-    }
-
-    // Senão, tenta login cliente Firebase
     try {
+      // Login com Firebase Auth
       const cred = await signInWithEmailAndPassword(auth, email, password);
       const uid = cred.user.uid;
 
-      const docRef = doc(db, "clientes", uid);
+      // Busca o perfil do usuário na coleção "usuarios" no Firestore
+      const docRef = doc(db, "usuarios", uid);
       const docSnap = await getDoc(docRef);
 
-      if (docSnap.exists()) {
-        const dados = docSnap.data();
+      if (!docSnap.exists()) {
+        setErro("Usuário não cadastrado no sistema.");
+        return;
+      }
+
+      const dados = docSnap.data();
+      const tipo = dados.tipo;
+
+      // Salva tipo no localStorage para controle de acesso
+      localStorage.setItem("usuarioTipo", tipo);
+
+      // Redireciona para o painel correto conforme o tipo
+      if (tipo === "barbeiro") {
+        navigate("/painel-barbeiro");
+      } else if (tipo === "ceo") {
+        navigate("/painel-ceo");
+      } else if (tipo === "cliente") {
+        // Caso tenha painel cliente, redirecione
         localStorage.setItem("clienteLogado", JSON.stringify({ uid, ...dados }));
-        localStorage.setItem("usuarioTipo", "cliente");
         navigate("/inicio");
       } else {
-        alert("Dados do usuário não encontrados.");
+        setErro("Tipo de usuário inválido.");
       }
     } catch (error) {
-      alert("Erro no login: " + error.message);
+      setErro("Erro no login: " + error.message);
     }
   };
 
@@ -97,6 +105,8 @@ export default function LoginPage() {
           </label>
         </div>
 
+        {erro && <p style={{ color: "red", marginBottom: "1rem" }}>{erro}</p>}
+
         <div className="button-container">
           <button type="submit" className="btn-login">
             <span className="btn-text">Entrar</span>
@@ -104,11 +114,11 @@ export default function LoginPage() {
         </div>
       </form>
 
-      <p className="forgot-password" onClick={handleForgotPassword}>
+      <p className="forgot-password" onClick={handleForgotPassword} style={{ cursor: "pointer" }}>
         Esqueci minha senha
       </p>
 
-      <p className="register-link" onClick={() => navigate("/")}>
+      <p className="register-link" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
         Não possui conta? Cadastre-se aqui
       </p>
     </div>

@@ -175,7 +175,7 @@ h1 {
 /* Botões estilizados e container para alinhar lado a lado */
 .acoes-botoes {
   display: flex;
-  flex-wrap: nowwrap;
+  flex-wrap: nowrap;
   gap: 8px;
   justify-content: center;
   align-items: center;

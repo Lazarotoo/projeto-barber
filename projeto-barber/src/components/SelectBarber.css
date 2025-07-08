@@ -226,3 +226,34 @@
   color: black;
   border: 1px solid black;
 }
+
+.servico-button {
+  background-color: rgba(44, 95, 131);
+  color: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px;
+  margin: 5px;
+  min-width: 120px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.servico-button.selected,
+.servico-button:hover {
+  background-color: white;
+  color: black;
+  border: 1px solid black;
+}
+
+.servicos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;  /* espaço vertical entre os botões */
+  align-items: center; /* opcional: centraliza horizontalmente */
+  margin-top: 1rem;
+}
+
+

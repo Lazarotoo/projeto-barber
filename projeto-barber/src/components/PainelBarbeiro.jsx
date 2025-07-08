@@ -1,5 +1,3 @@
-// PainelBarbeiro.jsx
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { collection, getDocs, doc, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
@@ -20,11 +18,13 @@ export default function PainelBarbeiro() {
   const [novaData, setNovaData] = useState(new Date());
   const [novoHorario, setNovoHorario] = useState("");
 
+  // Converte string dd/mm/aaaa para objeto Date
   const converteParaDate = (dataStr) => {
     const [dia, mes, ano] = dataStr.split("/");
     return new Date(`${ano}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}`);
   };
 
+  // Converte objeto Date para string dd/mm/aaaa
   const converteParaString = (dateObj) => {
     const dia = String(dateObj.getDate()).padStart(2, "0");
     const mes = String(dateObj.getMonth() + 1).padStart(2, "0");
@@ -32,6 +32,7 @@ export default function PainelBarbeiro() {
     return `${dia}/${mes}/${ano}`;
   };
 
+  // Carregar agendamentos do Firestore e proteger acesso
   useEffect(() => {
     const usuarioTipo = localStorage.getItem("usuarioTipo");
     if (usuarioTipo !== "barbeiro") {
@@ -47,17 +48,22 @@ export default function PainelBarbeiro() {
     };
 
     fetchAgendamentos();
+
+    // Atualiza a lista a cada 5 segundos
     const interval = setInterval(fetchAgendamentos, 5000);
     return () => clearInterval(interval);
   }, [navigate]);
 
+  // Marca agendamento como validado e adiciona pontos para cliente
   const handleValidar = async (index) => {
     const agend = agendamentos[index];
     if (agend.validado) return alert("Este agendamento já foi validado.");
 
     try {
+      // Atualiza status validado no Firestore
       await updateDoc(doc(db, "agendamentos", agend.id), { validado: true });
 
+      // Atualiza pontos do cliente
       const clienteRef = doc(db, "clientes", agend.clienteUid);
       const clienteSnap = await getDoc(clienteRef);
 
@@ -68,6 +74,7 @@ export default function PainelBarbeiro() {
 
         await updateDoc(clienteRef, { pontos: novosPontos });
 
+        // Atualiza localStorage caso cliente esteja logado
         const clienteLocal = JSON.parse(localStorage.getItem("clienteLogado"));
         if (clienteLocal && clienteLocal.uid === agend.clienteUid) {
           const clientes = JSON.parse(localStorage.getItem("clientes")) || {};
@@ -75,10 +82,12 @@ export default function PainelBarbeiro() {
           localStorage.setItem("clientes", JSON.stringify(clientes));
           localStorage.setItem("clienteLogado", JSON.stringify({ ...clienteLocal, pontos: novosPontos }));
 
+          // Dispara evento global para atualizar pontos no app
           window.dispatchEvent(new Event("pontosAtualizados"));
         }
       }
 
+      // Atualiza estado local para refletir validação
       const novos = [...agendamentos];
       novos[index].validado = true;
       setAgendamentos(novos);
@@ -89,6 +98,7 @@ export default function PainelBarbeiro() {
     }
   };
 
+  // Cancela agendamento, removendo do Firestore e estado local
   const handleCancelar = async (index) => {
     if (!window.confirm("Cancelar este agendamento?")) return;
 
@@ -102,6 +112,7 @@ export default function PainelBarbeiro() {
     }
   };
 
+  // Abre modal para alterar agendamento, preenchendo os dados atuais
   const abrirModalAlterar = (index) => {
     const agendamento = agendamentos[index];
     setAgendamentoEditando({ ...agendamento, index });
@@ -111,6 +122,7 @@ export default function PainelBarbeiro() {
     setModalAberto(true);
   };
 
+  // Salva alterações feitas no agendamento no Firestore e estado local
   const salvarAlteracao = async () => {
     if (!novoServico || !novaData || !novoHorario) return alert("Preencha todos os campos.");
 
@@ -134,8 +146,10 @@ export default function PainelBarbeiro() {
     }
   };
 
+  // Lista única de barbeiros para filtro
   const barbeirosUnicos = [...new Set(agendamentos.map(a => a.barbeiro))].sort();
 
+  // Filtra agendamentos conforme filtros aplicados
   const agendamentosFiltrados = agendamentos.filter(a => {
     if (barbeiroFiltro && a.barbeiro !== barbeiroFiltro) return false;
     if (mesFiltro) {
@@ -145,6 +159,7 @@ export default function PainelBarbeiro() {
     return true;
   });
 
+  // Total de cortes validados e soma dos valores validados
   const totalCortes = agendamentosFiltrados.filter(a => a.validado).length;
   const totalValor = agendamentosFiltrados.filter(a => a.validado).reduce((acc, a) => acc + (a.preco || 0), 0);
 
@@ -157,7 +172,9 @@ export default function PainelBarbeiro() {
           Filtrar por barbeiro:
           <select value={barbeiroFiltro} onChange={(e) => setBarbeiroFiltro(e.target.value)}>
             <option value="">Todos</option>
-            {barbeirosUnicos.map((b, i) => <option key={i} value={b}>{b}</option>)}
+            {barbeirosUnicos.map((b, i) => (
+              <option key={i} value={b}>{b}</option>
+            ))}
           </select>
         </label>
 
@@ -190,14 +207,16 @@ export default function PainelBarbeiro() {
           <tbody>
             {agendamentosFiltrados.map((ag, idx) => (
               <tr key={idx}>
-                <td>{ag.barbearia}</td>
-                <td>{ag.barbeiro}</td>
-                <td>{ag.data}</td>
-                <td>{ag.hora}</td>
-                <td>{ag.servico}</td>
-                <td>R$ {ag.preco?.toFixed(2) || "0.00"}</td>
-                <td>
-                  {ag.validado ? "Validado" : (
+                <td data-label="Barbearia">{ag.barbearia}</td>
+                <td data-label="Barbeiro">{ag.barbeiro}</td>
+                <td data-label="Data">{ag.data}</td>
+                <td data-label="Hora">{ag.hora}</td>
+                <td data-label="Serviço">{ag.servico}</td>
+                <td data-label="Valor">R$ {ag.preco?.toFixed(2) || "0.00"}</td>
+                <td data-label="Ações">
+                  {ag.validado ? (
+                    "Validado"
+                  ) : (
                     <div className="acoes-botoes">
                       <button className="btn-validar validar" onClick={() => handleValidar(idx)}>OK</button>
                       <button className="btn-validar alterar" onClick={() => abrirModalAlterar(idx)}>Alterar</button>
