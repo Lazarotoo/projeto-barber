@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import "./LoginPage.css";
 
@@ -13,7 +13,6 @@ export default function LoginPage() {
   const [erro, setErro] = useState(null);
 
   useEffect(() => {
-    // Limpa localStorage para garantir que não fique info antiga
     localStorage.removeItem("clienteLogado");
     localStorage.removeItem("usuarioTipo");
   }, []);
@@ -23,33 +22,30 @@ export default function LoginPage() {
     setErro(null);
 
     try {
-      // Login com Firebase Auth
+      // Login no Firebase Authentication
       const cred = await signInWithEmailAndPassword(auth, email, password);
-      const uid = cred.user.uid;
 
-      // Busca o perfil do usuário na coleção "usuarios" no Firestore
-      const docRef = doc(db, "usuarios", uid);
-      const docSnap = await getDoc(docRef);
+      // Buscar na coleção "usuarios" no Firestore
+      const q = query(collection(db, "usuarios"), where("email", "==", email));
+      const querySnapshot = await getDocs(q);
 
-      if (!docSnap.exists()) {
+      if (querySnapshot.empty) {
         setErro("Usuário não cadastrado no sistema.");
         return;
       }
 
-      const dados = docSnap.data();
-      const tipo = dados.tipo;
+      const dados = querySnapshot.docs[0].data();
+      const tipo = dados.role;
 
-      // Salva tipo no localStorage para controle de acesso
       localStorage.setItem("usuarioTipo", tipo);
 
-      // Redireciona para o painel correto conforme o tipo
+      // Redireciona com base no tipo de usuário
       if (tipo === "barbeiro") {
-        navigate("/painel-barbeiro");
+        navigate("/barbeiros"); // 🚀 Correto
       } else if (tipo === "ceo") {
-        navigate("/painel-ceo");
+        navigate("/ceo"); // 🚀 Correto
       } else if (tipo === "cliente") {
-        // Caso tenha painel cliente, redirecione
-        localStorage.setItem("clienteLogado", JSON.stringify({ uid, ...dados }));
+        localStorage.setItem("clienteLogado", JSON.stringify({ uid: cred.user.uid, ...dados }));
         navigate("/inicio");
       } else {
         setErro("Tipo de usuário inválido.");

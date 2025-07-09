@@ -1,0 +1,21 @@
+.painel-ceo-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  color: #222;
+}
+
+.painel-ceo-container h1 {
+  margin-bottom: 20px;
+}
+
+.painel-ceo-section {
+  margin-bottom: 40px;
+}
+
+.painel-ceo-section h2 {
+  margin-bottom: 15px;
+}
+
+.painel-ceo-section p {
+  margin: 5px 0;
+}

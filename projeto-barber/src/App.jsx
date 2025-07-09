@@ -8,11 +8,15 @@ import Perfil from "./components/Perfil";
 import PainelBarbeiro from "./components/PainelBarbeiro";
 import BarberLogin from "./components/BarberLogin";
 import PrivateRouteBarber from "./components/PrivateRouteBarber";
+import NotFoundPage from "./components/NotFoundPage";
+import PrivateRouteCEO from "./components/PrivateRouteCEO";
+import PainelCEO from "./components/PainelCEO";
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Rotas públicas */}
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/inicio" element={<InicioPage />} />
@@ -21,6 +25,8 @@ function App() {
         <Route path="/perfil" element={<Perfil />} />
 
         <Route path="/barber-login" element={<BarberLogin />} />
+
+        {/* Rotas protegidas */}
         <Route
           path="/barbeiros"
           element={
@@ -29,6 +35,17 @@ function App() {
             </PrivateRouteBarber>
           }
         />
+        <Route
+          path="/ceo"
+          element={
+            <PrivateRouteCEO>
+              <PainelCEO />
+            </PrivateRouteCEO>
+          }
+        />
+
+        {/* Rota fallback */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
   );
