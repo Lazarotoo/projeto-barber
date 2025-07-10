@@ -22,10 +22,7 @@ export default function LoginPage() {
     setErro(null);
 
     try {
-      // Login no Firebase Authentication
       const cred = await signInWithEmailAndPassword(auth, email, password);
-
-      // Buscar na coleção "usuarios" no Firestore
       const q = query(collection(db, "usuarios"), where("email", "==", email));
       const querySnapshot = await getDocs(q);
 
@@ -39,11 +36,10 @@ export default function LoginPage() {
 
       localStorage.setItem("usuarioTipo", tipo);
 
-      // Redireciona com base no tipo de usuário
       if (tipo === "barbeiro") {
-        navigate("/barbeiros"); // 🚀 Correto
+        navigate("/barbeiros");
       } else if (tipo === "ceo") {
-        navigate("/ceo"); // 🚀 Correto
+        navigate("/ceo");
       } else if (tipo === "cliente") {
         localStorage.setItem("clienteLogado", JSON.stringify({ uid: cred.user.uid, ...dados }));
         navigate("/inicio");

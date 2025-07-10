@@ -12,7 +12,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { collection, getDocs, setDoc, doc } from "firebase/firestore"; // removi query e where
+import { collection, getDocs, setDoc, doc } from "firebase/firestore";
 import { db } from "../firebase";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
@@ -32,6 +32,8 @@ export default function PainelCEO() {
 
   async function carregarDados() {
     const anoAtual = new Date().getFullYear();
+
+    // Receita (agendamentos)
     const agendamentosRef = collection(db, "agendamentos");
     const agendamentosSnapshot = await getDocs(agendamentosRef);
 
@@ -39,7 +41,7 @@ export default function PainelCEO() {
 
     agendamentosSnapshot.forEach((doc) => {
       const dados = doc.data();
-      const data = new Date(dados.data.seconds * 1000);
+      const data = dados.data?.seconds ? new Date(dados.data.seconds * 1000) : new Date(dados.data);
       const mes = data.getMonth() + 1;
       const ano = data.getFullYear();
 
@@ -49,6 +51,7 @@ export default function PainelCEO() {
       receitaPorMes[mes] += dados.valor || 0;
     });
 
+    // Despesas
     const despesasRef = collection(db, "despesas");
     const despesasSnapshot = await getDocs(despesasRef);
     const despesasObj = {};
@@ -126,23 +129,25 @@ export default function PainelCEO() {
 
       <section style={{ marginBottom: 40 }}>
         <h2>Totais Gerais</h2>
-        <p>
-          <strong>Receita Total:</strong> R$ {totais.receitaTotal.toFixed(2)}
-        </p>
-        <p>
-          <strong>Despesa Total:</strong> R$ {totais.despesasTotal.toFixed(2)}
-        </p>
-        <p>
-          <strong>Lucro Líquido:</strong> R$ {totais.lucroLiquido.toFixed(2)}
-        </p>
+        <p><strong>Receita Total:</strong> R$ {totais.receitaTotal.toFixed(2)}</p>
+        <p><strong>Despesa Total:</strong> R$ {totais.despesasTotal.toFixed(2)}</p>
+        <p><strong>Lucro Líquido:</strong> R$ {totais.lucroLiquido.toFixed(2)}</p>
       </section>
 
       <section style={{ marginBottom: 40 }}>
         <h2>Receita e Despesa Mensal</h2>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={dadosGanhos} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <BarChart
+            data={dadosGanhos}
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="mes" tickFormatter={(m) => ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"][m-1]} />
+            <XAxis
+              dataKey="mes"
+              tickFormatter={(m) =>
+                ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"][m - 1]
+              }
+            />
             <YAxis />
             <Tooltip formatter={(value) => `R$ ${value.toFixed(2)}`} />
             <Legend />

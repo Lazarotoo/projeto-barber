@@ -3,12 +3,9 @@ import { Navigate } from "react-router-dom";
 
 export default function PrivateRouteBarber({ children }) {
   const usuarioTipo = localStorage.getItem("usuarioTipo");
-  
   if (usuarioTipo !== "barbeiro") {
-    // Se não for barbeiro, redireciona para o login normal
+    alert("Acesso negado! Você precisa estar logado como Barbeiro.");
     return <Navigate to="/login" replace />;
   }
-
-  // Se for barbeiro, renderiza o componente protegido
   return children;
 }

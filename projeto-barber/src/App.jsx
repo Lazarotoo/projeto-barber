@@ -8,9 +8,9 @@ import Perfil from "./components/Perfil";
 import PainelBarbeiro from "./components/PainelBarbeiro";
 import BarberLogin from "./components/BarberLogin";
 import PrivateRouteBarber from "./components/PrivateRouteBarber";
-import NotFoundPage from "./components/NotFoundPage";
 import PrivateRouteCEO from "./components/PrivateRouteCEO";
 import PainelCEO from "./components/PainelCEO";
+import NotFoundPage from "./components/NotFoundPage";
 
 function App() {
   return (
