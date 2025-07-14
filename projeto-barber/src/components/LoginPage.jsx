@@ -13,8 +13,7 @@ export default function LoginPage() {
   const [erro, setErro] = useState(null);
 
   useEffect(() => {
-    localStorage.removeItem("clienteLogado");
-    localStorage.removeItem("usuarioTipo");
+    localStorage.removeItem("usuarioLogado");
   }, []);
 
   const handleLogin = async (e) => {
@@ -23,7 +22,9 @@ export default function LoginPage() {
 
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
-      const q = query(collection(db, "usuarios"), where("email", "==", email));
+      const uid = cred.user.uid;
+
+      const q = query(collection(db, "usuarios"), where("uid", "==", uid));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
@@ -32,16 +33,15 @@ export default function LoginPage() {
       }
 
       const dados = querySnapshot.docs[0].data();
-      const tipo = dados.role;
+      const role = dados.role;
 
-      localStorage.setItem("usuarioTipo", tipo);
+      localStorage.setItem("usuarioLogado", JSON.stringify(dados));
 
-      if (tipo === "barbeiro") {
+      if (role === "barbeiro") {
         navigate("/barbeiros");
-      } else if (tipo === "ceo") {
+      } else if (role === "ceo") {
         navigate("/ceo");
-      } else if (tipo === "cliente") {
-        localStorage.setItem("clienteLogado", JSON.stringify({ uid: cred.user.uid, ...dados }));
+      } else if (role === "cliente") {
         navigate("/inicio");
       } else {
         setErro("Tipo de usuário inválido.");

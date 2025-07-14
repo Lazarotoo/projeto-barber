@@ -20,37 +20,25 @@ export default function HomePage() {
     }
 
     try {
-      // 1️⃣ Cria no Firebase Auth
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       const uid = cred.user.uid;
 
-      // 2️⃣ Salva no Firestore (coleção correta: 'usuarios')
       const dadosCliente = {
         uid,
         nome: name,
         telefone: phone,
         email: email,
         pontos: 0,
-        role: "cliente",  // 🔑 CAMPO OBRIGATÓRIO
+        role: "cliente", // Campo obrigatório para definir o tipo
       };
 
-      await setDoc(doc(db, "usuarios", uid), {    // ✅ Coleção correta: usuarios
-  uid,
-  nome: name,
-  telefone: phone,
-  email: email,
-  pontos: 0,
-  role: "cliente",                          // ✅ Campo obrigatório para funcionar o login
-});
+      await setDoc(doc(db, "usuarios", uid), dadosCliente);
 
+      // Salva de forma unificada
+      localStorage.setItem("usuarioLogado", JSON.stringify(dadosCliente));
 
-      // 3️⃣ Salva no localStorage
-      localStorage.setItem("clienteLogado", JSON.stringify(dadosCliente));
-      localStorage.setItem("usuarioTipo", "cliente");
-
-      // 4️⃣ Redireciona para tela inicial do cliente
+      // Redireciona para tela inicial do cliente
       navigate("/inicio");
-
     } catch (error) {
       if (error.code === "auth/email-already-in-use") {
         alert("Já existe um cliente com este e-mail.");
@@ -63,7 +51,6 @@ export default function HomePage() {
   return (
     <div className="root-container">
       <div className="hero-image"></div>
-
       <h2 className="title">Bem-Vindo<br />a<br />RBI BARBER</h2>
 
       <div className="input-group">
