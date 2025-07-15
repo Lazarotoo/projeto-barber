@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import "./LoginPage.css";
 
@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [erro, setErro] = useState(null);
 
   useEffect(() => {
+    // Limpa qualquer usuário logado anteriormente (pode comentar se preferir)
     localStorage.removeItem("usuarioLogado");
   }, []);
 
@@ -21,22 +22,32 @@ export default function LoginPage() {
     setErro(null);
 
     try {
+      // 1. Autentica o usuário no Firebase Auth
       const cred = await signInWithEmailAndPassword(auth, email, password);
       const uid = cred.user.uid;
 
-      const q = query(collection(db, "usuarios"), where("uid", "==", uid));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
+      // 2. Busca os dados do usuário na coleção "usuarios"
+      const userDoc = await getDoc(doc(db, "usuarios", uid));
+      if (!userDoc.exists()) {
         setErro("Usuário não cadastrado no sistema.");
         return;
       }
 
-      const dados = querySnapshot.docs[0].data();
-      const role = dados.role;
+      // 3. Garante que role está limpo e formatado corretamente
+      const dados = userDoc.data();
+      const role = dados.role?.trim().toLowerCase();
 
-      localStorage.setItem("usuarioLogado", JSON.stringify(dados));
+      // 4. Monta o objeto completo e salva no localStorage
+      const usuarioLogado = {
+        uid,
+        email: dados.email,
+        role: role,
+      };
 
+      localStorage.setItem("usuarioLogado", JSON.stringify(usuarioLogado));
+      console.log("Dados salvos no localStorage:", localStorage.getItem("usuarioLogado"));
+
+      // 5. Redireciona conforme o tipo de usuário
       if (role === "barbeiro") {
         navigate("/barbeiros");
       } else if (role === "ceo") {
@@ -68,7 +79,11 @@ export default function LoginPage() {
   return (
     <div className="root-container">
       <div className="hero-image"></div>
-      <h2 className="title">Login<br />RBI BARBER</h2>
+      <h2 className="title">
+        Login
+        <br />
+        RBI BARBER
+      </h2>
 
       <form onSubmit={handleLogin}>
         <div className="input-group">
@@ -97,7 +112,9 @@ export default function LoginPage() {
           </label>
         </div>
 
-        {erro && <p style={{ color: "red", marginBottom: "1rem" }}>{erro}</p>}
+        {erro && (
+          <p style={{ color: "red", marginBottom: "1rem" }}>{erro}</p>
+        )}
 
         <div className="button-container">
           <button type="submit" className="btn-login">
@@ -106,11 +123,19 @@ export default function LoginPage() {
         </div>
       </form>
 
-      <p className="forgot-password" onClick={handleForgotPassword} style={{ cursor: "pointer" }}>
+      <p
+        className="forgot-password"
+        onClick={handleForgotPassword}
+        style={{ cursor: "pointer" }}
+      >
         Esqueci minha senha
       </p>
 
-      <p className="register-link" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
+      <p
+        className="register-link"
+        onClick={() => navigate("/")}
+        style={{ cursor: "pointer" }}
+      >
         Não possui conta? Cadastre-se aqui
       </p>
     </div>

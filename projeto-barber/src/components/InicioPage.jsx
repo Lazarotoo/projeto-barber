@@ -8,8 +8,9 @@ export default function InicioPage() {
   const [clienteNome, setClienteNome] = useState("");
 
   useEffect(() => {
-    const logado = JSON.parse(localStorage.getItem("clienteLogado"));
-    if (!logado?.nome) {
+    // Corrigido para pegar do localStorage correto
+    const logado = JSON.parse(localStorage.getItem("usuarioLogado"));
+    if (!logado?.nome || logado.role !== "cliente") {
       navigate("/login");
     } else {
       setClienteNome(logado.nome);
@@ -65,7 +66,7 @@ export default function InicioPage() {
             <div
               className="inicio-barber-image"
               style={{
-                 backgroundImage: 'url("/images/WhatsApp Image 2025-06-23 at 14.28.05.jpeg")',
+                backgroundImage: 'url("/images/WhatsApp Image 2025-06-23 at 14.28.05.jpeg")',
               }}
             ></div>
             <div>
