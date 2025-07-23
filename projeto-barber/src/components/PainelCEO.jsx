@@ -1,4 +1,7 @@
+// PainelCEO.js (versão ajustada)
+
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Importar useNavigate
 import {
   ResponsiveContainer,
   BarChart,
@@ -18,6 +21,7 @@ import { db } from "../firebase";
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
 export default function PainelCEO() {
+  const navigate = useNavigate(); // Inicializar useNavigate
   const [dadosGanhos, setDadosGanhos] = useState([]);
   const [totais, setTotais] = useState({
     receitaTotal: 0,
@@ -30,6 +34,17 @@ export default function PainelCEO() {
   const [inputValorDespesa, setInputValorDespesa] = useState("");
   const [inputDescricaoDespesa, setInputDescricaoDespesa] = useState("");
 
+  // Adicionar useEffect para proteção de rota
+  useEffect(() => {
+    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+    if (!usuarioLogado || usuarioLogado.role !== "ceo") {
+      alert("Acesso negado! Você precisa estar logado como CEO.");
+      navigate("/login"); // Redireciona para a tela de login
+      return;
+    }
+  }, [navigate]); // Adicionar navigate como dependência
+
   async function carregarDados() {
     const anoAtual = new Date().getFullYear();
 
@@ -41,14 +56,28 @@ export default function PainelCEO() {
 
     agendamentosSnapshot.forEach((doc) => {
       const dados = doc.data();
-      const data = dados.data?.seconds ? new Date(dados.data.seconds * 1000) : new Date(dados.data);
+      // Ajuste para lidar com campos de data que podem ser Timestamp ou String
+      let data;
+      if (dados.data?.seconds) {
+        data = new Date(dados.data.seconds * 1000);
+      } else if (typeof dados.data === 'string') {
+        // Assume formato "dd/mm/aaaa" e converte para Date
+        const [dia, mes, ano] = dados.data.split('/');
+        data = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+      } else if (dados.data instanceof Date) {
+        data = dados.data;
+      } else {
+        console.warn("Formato de data inesperado no agendamento:", dados.data);
+        return; // Pula este agendamento se a data for inválida
+      }
+
       const mes = data.getMonth() + 1;
       const ano = data.getFullYear();
 
       if (ano !== anoAtual) return;
 
       if (!receitaPorMes[mes]) receitaPorMes[mes] = 0;
-      receitaPorMes[mes] += dados.valor || 0;
+      receitaPorMes[mes] += dados.preco || 0; // Use 'preco' para receita de agendamentos
     });
 
     // Despesas
@@ -85,9 +114,14 @@ export default function PainelCEO() {
     });
   }
 
+  // O useEffect original para carregarDados permanece, mas agora roda após a verificação de role.
   useEffect(() => {
-    carregarDados();
-  }, []);
+    // Carrega dados APÓS a verificação de acesso
+    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+    if (usuarioLogado?.role === "ceo") { // Garante que só carrega se for CEO
+      carregarDados();
+    }
+  }, []); // Dependências vazias para rodar uma vez na montagem
 
   async function salvarDespesa(e) {
     e.preventDefault();
@@ -101,26 +135,46 @@ export default function PainelCEO() {
     const anoNum = parseInt(inputAno);
     const valorNum = parseFloat(inputValorDespesa);
 
-    const docId = `${anoNum}-${mesNum}`;
+    // Validação básica para mês e ano
+    if (mesNum < 1 || mesNum > 12 || isNaN(mesNum)) {
+      alert("Mês inválido. Digite um número entre 1 e 12.");
+      return;
+    }
+    if (anoNum < 2000 || anoNum > 2100 || isNaN(anoNum)) {
+      alert("Ano inválido. Digite um ano entre 2000 e 2100.");
+      return;
+    }
+    if (valorNum <= 0 || isNaN(valorNum)) {
+      alert("Valor da despesa deve ser um número positivo.");
+      return;
+    }
 
-    await setDoc(doc(db, "despesas", docId), {
-      ano: anoNum,
-      mes: mesNum,
-      valor: valorNum,
-      descricao: inputDescricaoDespesa,
-    });
 
-    alert("Despesa salva com sucesso!");
-    setInputMes("");
-    setInputValorDespesa("");
-    setInputDescricaoDespesa("");
+    const docId = `${anoNum}-${String(mesNum).padStart(2, '0')}`; // Formato "AAAA-MM" para consistência
 
-    carregarDados();
+    try {
+        await setDoc(doc(db, "despesas", docId), {
+            ano: anoNum,
+            mes: mesNum,
+            valor: valorNum,
+            descricao: inputDescricaoDespesa,
+        }, { merge: true }); // Use merge para atualizar se o documento já existir
+
+        alert("Despesa salva com sucesso!");
+        setInputMes("");
+        setInputValorDespesa("");
+        setInputDescricaoDespesa("");
+
+        carregarDados(); // Recarrega os dados para atualizar o gráfico
+    } catch (error) {
+        alert("Erro ao salvar despesa: " + error.message);
+        console.error("Erro ao salvar despesa:", error);
+    }
   }
 
   const dadosPizza = [
-    { name: "Receita", value: totais.receitaTotal },
-    { name: "Despesa", value: totais.despesasTotal },
+    { name: "Receita", value: totais.receitaTotal > 0 ? totais.receitaTotal : 0.01 }, // Evita divisão por zero
+    { name: "Despesa", value: totais.despesasTotal > 0 ? totais.despesasTotal : 0.01 }, // Evita divisão por zero
   ];
 
   return (

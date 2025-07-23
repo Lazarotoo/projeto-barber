@@ -30,7 +30,6 @@
   cursor: pointer;
 }
 
-
 .selectbarber-title {
   font-size: 1.125rem;
   font-weight: 700;
@@ -67,6 +66,14 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
+}
+
+.barber-full-card h3 { /* Este seletor assume que o h3 está diretamente dentro de .barber-full-card */
+    text-align: center;
+    margin-bottom: 0.75rem; /* Ajuste se necessário para o espaçamento */
+    color: #333; /* Cor que você pode preferir, se não for a padrão do corpo */
+    font-size: 1.125rem; /* Tamanho da fonte, se você quiser algo específico */
+    font-weight: 700; /* Peso da fonte, se quiser algo específico */
 }
 
 .barber-image-wrapper-large {

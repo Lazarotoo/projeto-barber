@@ -47,3 +47,27 @@
   color: black;
   border: 1px solid black;
 }
+
+
+.time-buttons button.booked-time {
+    background-color: #f8d7da; /* Um tom de vermelho claro para indicar ocupado */
+    color: #721c24; /* Cor do texto mais escura */
+    border: 1px solid #f5c6cb;
+    cursor: not-allowed; /* Altera o cursor para indicar que não é clicável */
+    opacity: 0.7; /* Torna-o um pouco transparente */
+}
+
+/* Opcional: Se você tiver um estilo para hover nos botões normais,
+   pode querer garantir que o hover não mude a cor do botão ocupado. */
+.time-buttons button.booked-time:hover {
+    background-color: #f8d7da; /* Mantém a cor original no hover */
+    color: #721c24;
+    cursor: not-allowed;
+}
+
+/* Garante que o botão selecionado ainda se destaque, mas o 'booked-time' tem prioridade de fundo */
+.time-buttons button.booked-time.selected-time {
+    /* Você pode ajustar isso se quiser que um horário reservado e selecionado
+       tenha uma aparência diferente. Por padrão, 'booked-time' terá prioridade de fundo */
+    border: 2px dashed #721c24; /* Exemplo: borda pontilhada para indicar que está selecionado mas ocupado */
+}
