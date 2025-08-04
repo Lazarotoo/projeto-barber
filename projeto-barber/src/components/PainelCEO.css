@@ -1,21 +1,110 @@
-.painel-ceo-container {
-  padding: 20px;
-  font-family: Arial, sans-serif;
-  color: #222;
+/* Fonte global aplicada a toda a página */
+* {
+  font-family: 'Inter', sans-serif !important;
 }
 
-.painel-ceo-container h1 {
+/* Estilização geral */
+body {
+  color: #222;
+  padding: 20px;
+}
+
+.painel-ceo-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.painel-ceo-title {
+  font-size: 2.5rem;
+  color: #004080;
   margin-bottom: 20px;
+  text-align: center;
 }
 
 .painel-ceo-section {
   margin-bottom: 40px;
 }
 
-.painel-ceo-section h2 {
-  margin-bottom: 15px;
+.painel-ceo-subtitle {
+  font-size: 1.8rem;
+  color: #0059b3;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
 }
 
-.painel-ceo-section p {
+/* Centraliza os textos dos totais */
+.painel-ceo-totais {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.painel-ceo-total-text {
+  font-size: 1.2rem;
   margin: 5px 0;
+}
+
+/* Centraliza os títulos dos gráficos */
+.painel-ceo-grafico-titulo {
+  text-align: center;
+}
+
+.painel-ceo-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: flex-end;
+}
+
+.painel-ceo-label {
+  display: flex;
+  flex-direction: column;
+  font-size: 1rem;
+  color: #333;
+}
+
+.painel-ceo-input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.painel-ceo-button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.painel-ceo-button:hover {
+  background-color: #0056b3;
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 768px) {
+  .painel-ceo-title {
+    font-size: 2rem;
+  }
+
+  .painel-ceo-subtitle {
+    font-size: 1.5rem;
+  }
+
+  .painel-ceo-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

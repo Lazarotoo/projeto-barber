@@ -1,7 +1,5 @@
-// PainelCEO.js (versão ajustada)
-
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Importar useNavigate
+import React, { useEffect, useState, useCallback } from "react";
+import './PainelCEO.css'
 import {
   ResponsiveContainer,
   BarChart,
@@ -15,13 +13,13 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { collection, getDocs, setDoc, doc } from "firebase/firestore";
-import { db } from "../firebase";
+import { initializeApp } from "firebase/app";
+import { getAuth, signInWithCustomToken, onAuthStateChanged, signInAnonymously } from "firebase/auth";
+import { getFirestore, collection, getDocs, setDoc, doc } from "firebase/firestore";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
-export default function PainelCEO() {
-  const navigate = useNavigate(); // Inicializar useNavigate
+function App() {
   const [dadosGanhos, setDadosGanhos] = useState([]);
   const [totais, setTotais] = useState({
     receitaTotal: 0,
@@ -33,101 +31,160 @@ export default function PainelCEO() {
   const [inputAno, setInputAno] = useState(new Date().getFullYear());
   const [inputValorDespesa, setInputValorDespesa] = useState("");
   const [inputDescricaoDespesa, setInputDescricaoDespesa] = useState("");
+  const [modalAlertaVisivel, setModalAlertaVisivel] = useState(false);
+  const [mensagemAlerta, setMensagemAlerta] = useState("");
 
-  // Adicionar useEffect para proteção de rota
+  const [firebaseReady, setFirebaseReady] = useState(false);
+  const [db, setDb] = useState(null);
+  const [userId, setUserId] = useState(null);
+
+  // Estas variáveis globais são fornecidas pelo ambiente.
+  // Usamos 'typeof' para garantir que não causem erros se não existirem.
+  // eslint-disable-next-line no-undef
+  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+  // Modal de alerta personalizado para substituir 'alert()'
+  const mostrarAlerta = (mensagem) => {
+    setMensagemAlerta(mensagem);
+    setModalAlertaVisivel(true);
+  };
+
+  const fecharAlerta = () => {
+    setModalAlertaVisivel(false);
+    setMensagemAlerta("");
+  };
+
+  // Inicialização e autenticação do Firebase.
+  // Esta lógica é necessária porque não temos um ficheiro 'firebase.js' separado.
   useEffect(() => {
-    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(firebaseConfig) : {};
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? initialAuthToken : null;
 
-    if (!usuarioLogado || usuarioLogado.role !== "ceo") {
-      alert("Acesso negado! Você precisa estar logado como CEO.");
-      navigate("/login"); // Redireciona para a tela de login
+    if (!firebaseConfig || Object.keys(firebaseConfig).length === 0) {
+      console.error("A configuração do Firebase está em falta.");
       return;
     }
-  }, [navigate]); // Adicionar navigate como dependência
 
-  async function carregarDados() {
+    const app = initializeApp(firebaseConfig, appId);
+    const authInstance = getAuth(app);
+    const dbInstance = getFirestore(app);
+
+    setDb(dbInstance);
+
+    const checkAuth = async () => {
+      try {
+        if (initialAuthToken) {
+          await signInWithCustomToken(authInstance, initialAuthToken);
+        } else {
+          await signInAnonymously(authInstance);
+        }
+      } catch (error) {
+        console.error("Erro de autenticação:", error);
+      }
+    };
+
+    const unsubscribe = onAuthStateChanged(authInstance, (user) => {
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        setUserId(null);
+      }
+      setFirebaseReady(true);
+    });
+
+    checkAuth();
+    return () => unsubscribe();
+  }, [appId]);
+
+  // Função para carregar os dados, memoizada com 'useCallback' para evitar
+  // o aviso de dependência do 'useEffect'.
+  const carregarDados = useCallback(async () => {
+    if (!db || !userId) return;
+
     const anoAtual = new Date().getFullYear();
 
-    // Receita (agendamentos)
-    const agendamentosRef = collection(db, "agendamentos");
-    const agendamentosSnapshot = await getDocs(agendamentosRef);
+    try {
+      // Receita (agendamentos)
+      const agendamentosRef = collection(db, "artifacts", appId, "public", "data", "agendamentos");
+      const agendamentosSnapshot = await getDocs(agendamentosRef);
+      const receitaPorMes = {};
+      let receitaTotal = 0;
 
-    const receitaPorMes = {};
+      agendamentosSnapshot.forEach((doc) => {
+        const dados = doc.data();
+        if (dados.validado) {
+          let data;
+          if (dados.data?.seconds) {
+            data = new Date(dados.data.seconds * 1000);
+          } else if (typeof dados.data === 'string') {
+            const [dia, mes, ano] = dados.data.split('/');
+            data = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+          } else if (dados.data instanceof Date) {
+            data = dados.data;
+          } else {
+            console.warn("Formato de data inesperado no agendamento:", dados.data);
+            return;
+          }
 
-    agendamentosSnapshot.forEach((doc) => {
-      const dados = doc.data();
-      // Ajuste para lidar com campos de data que podem ser Timestamp ou String
-      let data;
-      if (dados.data?.seconds) {
-        data = new Date(dados.data.seconds * 1000);
-      } else if (typeof dados.data === 'string') {
-        // Assume formato "dd/mm/aaaa" e converte para Date
-        const [dia, mes, ano] = dados.data.split('/');
-        data = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
-      } else if (dados.data instanceof Date) {
-        data = dados.data;
-      } else {
-        console.warn("Formato de data inesperado no agendamento:", dados.data);
-        return; // Pula este agendamento se a data for inválida
+          const mes = data.getMonth() + 1;
+          const ano = data.getFullYear();
+
+          if (ano !== anoAtual) return;
+          if (!receitaPorMes[mes]) receitaPorMes[mes] = 0;
+          receitaPorMes[mes] += dados.preco || 0;
+          receitaTotal += dados.preco || 0;
+        }
+      });
+
+      // Despesas
+      const despesasRef = collection(db, "artifacts", appId, "public", "data", "despesas");
+      const despesasSnapshot = await getDocs(despesasRef);
+      const despesasObj = {};
+      let despesasTotal = 0;
+
+      despesasSnapshot.forEach((doc) => {
+        const d = doc.data();
+        if (d.ano === anoAtual) {
+          despesasObj[`${d.ano}-${d.mes}`] = { valor: d.valor, descricao: d.descricao };
+          despesasTotal += d.valor;
+        }
+      });
+
+      const dadosParaGrafico = [];
+      for (let m = 1; m <= 12; m++) {
+        const receita = receitaPorMes[m] || 0;
+        const despesa = despesasObj[`${anoAtual}-${m}`]?.valor || 0;
+        dadosParaGrafico.push({ mes: m, receita, despesa });
       }
 
-      const mes = data.getMonth() + 1;
-      const ano = data.getFullYear();
-
-      if (ano !== anoAtual) return;
-
-      if (!receitaPorMes[mes]) receitaPorMes[mes] = 0;
-      receitaPorMes[mes] += dados.preco || 0; // Use 'preco' para receita de agendamentos
-    });
-
-    // Despesas
-    const despesasRef = collection(db, "despesas");
-    const despesasSnapshot = await getDocs(despesasRef);
-    const despesasObj = {};
-    despesasSnapshot.forEach((doc) => {
-      const d = doc.data();
-      despesasObj[`${d.ano}-${d.mes}`] = { valor: d.valor, descricao: d.descricao };
-    });
-
-    const dadosParaGrafico = [];
-    let receitaTotal = 0;
-    let despesasTotal = 0;
-    for (let m = 1; m <= 12; m++) {
-      const receita = receitaPorMes[m] || 0;
-      const despesa = despesasObj[`${anoAtual}-${m}`]?.valor || 0;
-
-      receitaTotal += receita;
-      despesasTotal += despesa;
-
-      dadosParaGrafico.push({
-        mes: m,
-        receita,
-        despesa,
+      setDadosGanhos(dadosParaGrafico);
+      setTotais({
+        receitaTotal,
+        despesasTotal,
+        lucroLiquido: receitaTotal - despesasTotal,
       });
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+      mostrarAlerta("Erro ao carregar os dados. Verifique as permissões e o formato dos dados.");
     }
+  }, [db, userId, appId]);
 
-    setDadosGanhos(dadosParaGrafico);
-    setTotais({
-      receitaTotal,
-      despesasTotal,
-      lucroLiquido: receitaTotal - despesasTotal,
-    });
-  }
-
-  // O useEffect original para carregarDados permanece, mas agora roda após a verificação de role.
+  // UseEffect para carregar os dados quando o Firebase estiver pronto
   useEffect(() => {
-    // Carrega dados APÓS a verificação de acesso
-    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
-    if (usuarioLogado?.role === "ceo") { // Garante que só carrega se for CEO
+    if (firebaseReady && userId) {
       carregarDados();
     }
-  }, []); // Dependências vazias para rodar uma vez na montagem
+  }, [firebaseReady, userId, carregarDados]);
 
   async function salvarDespesa(e) {
     e.preventDefault();
 
+    if (!db) {
+      mostrarAlerta("A base de dados não está pronta.");
+      return;
+    }
     if (!inputMes || !inputAno || !inputValorDespesa) {
-      alert("Preencha todos os campos.");
+      mostrarAlerta("Preencha todos os campos.");
       return;
     }
 
@@ -135,158 +192,198 @@ export default function PainelCEO() {
     const anoNum = parseInt(inputAno);
     const valorNum = parseFloat(inputValorDespesa);
 
-    // Validação básica para mês e ano
     if (mesNum < 1 || mesNum > 12 || isNaN(mesNum)) {
-      alert("Mês inválido. Digite um número entre 1 e 12.");
+      mostrarAlerta("Mês inválido. Digite um número entre 1 e 12.");
       return;
     }
     if (anoNum < 2000 || anoNum > 2100 || isNaN(anoNum)) {
-      alert("Ano inválido. Digite um ano entre 2000 e 2100.");
+      mostrarAlerta("Ano inválido. Digite um ano entre 2000 e 2100.");
       return;
     }
     if (valorNum <= 0 || isNaN(valorNum)) {
-      alert("Valor da despesa deve ser um número positivo.");
+      mostrarAlerta("O valor da despesa deve ser um número positivo.");
       return;
     }
 
-
-    const docId = `${anoNum}-${String(mesNum).padStart(2, '0')}`; // Formato "AAAA-MM" para consistência
+    const docId = `${anoNum}-${String(mesNum).padStart(2, '0')}`;
+    const despesasCollectionRef = collection(db, "artifacts", appId, "public", "data", "despesas");
 
     try {
-        await setDoc(doc(db, "despesas", docId), {
-            ano: anoNum,
-            mes: mesNum,
-            valor: valorNum,
-            descricao: inputDescricaoDespesa,
-        }, { merge: true }); // Use merge para atualizar se o documento já existir
+      await setDoc(doc(despesasCollectionRef, docId), {
+        ano: anoNum,
+        mes: mesNum,
+        valor: valorNum,
+        descricao: inputDescricaoDespesa,
+      }, { merge: true });
 
-        alert("Despesa salva com sucesso!");
-        setInputMes("");
-        setInputValorDespesa("");
-        setInputDescricaoDespesa("");
-
-        carregarDados(); // Recarrega os dados para atualizar o gráfico
+      mostrarAlerta("Despesa salva com sucesso!");
+      setInputMes("");
+      setInputValorDespesa("");
+      setInputDescricaoDespesa("");
+      carregarDados();
     } catch (error) {
-        alert("Erro ao salvar despesa: " + error.message);
-        console.error("Erro ao salvar despesa:", error);
+      mostrarAlerta("Erro ao salvar despesa: " + error.message);
+      console.error("Erro ao salvar despesa:", error);
     }
   }
 
   const dadosPizza = [
-    { name: "Receita", value: totais.receitaTotal > 0 ? totais.receitaTotal : 0.01 }, // Evita divisão por zero
-    { name: "Despesa", value: totais.despesasTotal > 0 ? totais.despesasTotal : 0.01 }, // Evita divisão por zero
+    { name: "Receita", value: totais.receitaTotal > 0 ? totais.receitaTotal : 0.01 },
+    { name: "Despesa", value: totais.despesasTotal > 0 ? totais.despesasTotal : 0.01 },
   ];
 
   return (
-    <div style={{ padding: 20, fontFamily: "Arial, sans-serif", color: "#222" }}>
-      <h1>Painel do CEO - Gil</h1>
+    <div className="bg-gray-100 min-h-screen p-4 sm:p-8 font-['Inter']">
+      <div className="max-w-7xl mx-auto my-6 p-6 sm:p-8 bg-white rounded-xl shadow-lg">
+        <h1 className="text-center mb-8 font-bold text-3xl sm:text-4xl text-gray-800">
+          Painel do CEO - Gil
+        </h1>
 
-      <section style={{ marginBottom: 40 }}>
-        <h2>Totais Gerais</h2>
-        <p><strong>Receita Total:</strong> R$ {totais.receitaTotal.toFixed(2)}</p>
-        <p><strong>Despesa Total:</strong> R$ {totais.despesasTotal.toFixed(2)}</p>
-        <p><strong>Lucro Líquido:</strong> R$ {totais.lucroLiquido.toFixed(2)}</p>
-      </section>
+        <section className="mb-8">
+          <h2 className="text-2xl font-semibold border-b-2 pb-2 mb-4 text-gray-700">
+            Totais Gerais
+          </h2>
+          <div className="flex flex-wrap justify-between text-lg">
+            <p className="w-full md:w-1/3 mb-2">
+              <strong className="text-blue-600">Receita Total:</strong> R$ {totais.receitaTotal.toFixed(2)}
+            </p>
+            <p className="w-full md:w-1/3 mb-2">
+              <strong className="text-red-600">Despesa Total:</strong> R$ {totais.despesasTotal.toFixed(2)}
+            </p>
+            <p className="w-full md:w-1/3 mb-2">
+              <strong className="text-green-600">Lucro Líquido:</strong> R$ {totais.lucroLiquido.toFixed(2)}
+            </p>
+          </div>
+        </section>
 
-      <section style={{ marginBottom: 40 }}>
-        <h2>Receita e Despesa Mensal</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart
-            data={dadosGanhos}
-            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="mes"
-              tickFormatter={(m) =>
-                ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"][m - 1]
-              }
-            />
-            <YAxis />
-            <Tooltip formatter={(value) => `R$ ${value.toFixed(2)}`} />
-            <Legend />
-            <Bar dataKey="receita" fill="#0088FE" name="Receita" />
-            <Bar dataKey="despesa" fill="#FF8042" name="Despesa" />
-          </BarChart>
-        </ResponsiveContainer>
-      </section>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          <section className="p-4 bg-gray-50 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">
+              Receita e Despesa Mensal
+            </h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart
+                data={dadosGanhos}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="mes"
+                  tickFormatter={(m) =>
+                    ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"][m - 1]
+                  }
+                />
+                <YAxis />
+                <Tooltip formatter={(value) => `R$ ${value.toFixed(2)}`} />
+                <Legend />
+                <Bar dataKey="receita" fill="#0088FE" name="Receita" />
+                <Bar dataKey="despesa" fill="#FF8042" name="Despesa" />
+              </BarChart>
+            </ResponsiveContainer>
+          </section>
 
-      <section style={{ marginBottom: 40 }}>
-        <h2>Distribuição Receita x Despesa</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={dadosPizza}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-              outerRadius={100}
-              fill="#8884d8"
-              dataKey="value"
+          <section className="p-4 bg-gray-50 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">
+              Distribuição Receita x Despesa
+            </h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={dadosPizza}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {dadosPizza.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => `R$ ${value.toFixed(2)}`} />
+              </PieChart>
+            </ResponsiveContainer>
+          </section>
+        </div>
+
+        <section className="p-6 bg-gray-50 rounded-lg shadow-md">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+            Registrar / Editar Despesa Mensal
+          </h2>
+          <form onSubmit={salvarDespesa} className="flex flex-wrap items-end gap-4">
+            <label className="flex-1 min-w-[150px]">
+              <span className="block text-sm font-medium text-gray-700">Ano:</span>
+              <input
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                type="number"
+                value={inputAno}
+                onChange={(e) => setInputAno(e.target.value)}
+                min="2000"
+                max="2100"
+                required
+              />
+            </label>
+            <label className="flex-1 min-w-[150px]">
+              <span className="block text-sm font-medium text-gray-700">Mês (1-12):</span>
+              <input
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                type="number"
+                value={inputMes}
+                onChange={(e) => setInputMes(e.target.value)}
+                min="1"
+                max="12"
+                required
+              />
+            </label>
+            <label className="flex-1 min-w-[150px]">
+              <span className="block text-sm font-medium text-gray-700">Valor da Despesa:</span>
+              <input
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                type="number"
+                value={inputValorDespesa}
+                onChange={(e) => setInputValorDespesa(e.target.value)}
+                min="0"
+                step="0.01"
+                required
+              />
+            </label>
+            <label className="flex-1 min-w-[200px]">
+              <span className="block text-sm font-medium text-gray-700">Descrição:</span>
+              <input
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                type="text"
+                value={inputDescricaoDespesa}
+                onChange={(e) => setInputDescricaoDespesa(e.target.value)}
+              />
+            </label>
+            <button
+              type="submit"
+              className="mt-4 sm:mt-0 px-4 py-2 bg-blue-600 text-white font-semibold rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              {dadosPizza.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip formatter={(value) => `R$ ${value.toFixed(2)}`} />
-          </PieChart>
-        </ResponsiveContainer>
-      </section>
+              Salvar Despesa
+            </button>
+          </form>
+        </section>
 
-      <section>
-        <h2>Registrar / Editar Despesa Mensal</h2>
-        <form onSubmit={salvarDespesa} style={{ marginBottom: 20 }}>
-          <label>
-            Ano:{" "}
-            <input
-              type="number"
-              value={inputAno}
-              onChange={(e) => setInputAno(e.target.value)}
-              min="2000"
-              max="2100"
-              required
-              style={{ width: 80 }}
-            />
-          </label>
-          <label style={{ marginLeft: 20 }}>
-            Mês (1-12):{" "}
-            <input
-              type="number"
-              value={inputMes}
-              onChange={(e) => setInputMes(e.target.value)}
-              min="1"
-              max="12"
-              required
-              style={{ width: 60 }}
-            />
-          </label>
-          <label style={{ marginLeft: 20 }}>
-            Valor da Despesa: R${" "}
-            <input
-              type="number"
-              value={inputValorDespesa}
-              onChange={(e) => setInputValorDespesa(e.target.value)}
-              min="0"
-              step="0.01"
-              required
-              style={{ width: 100 }}
-            />
-          </label>
-          <label style={{ marginLeft: 20 }}>
-            Descrição:{" "}
-            <input
-              type="text"
-              value={inputDescricaoDespesa}
-              onChange={(e) => setInputDescricaoDespesa(e.target.value)}
-              style={{ width: 200 }}
-            />
-          </label>
-          <button type="submit" style={{ marginLeft: 20 }}>
-            Salvar Despesa
-          </button>
-        </form>
-      </section>
+        {modalAlertaVisivel && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+            <div className="relative p-5 border w-96 shadow-lg rounded-md bg-white text-center">
+              <h3 className="text-xl font-bold mb-4">Aviso</h3>
+              <p className="mb-4">{mensagemAlerta}</p>
+              <button
+                onClick={fecharAlerta}
+                className="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-24 shadow-sm hover:bg-blue-600"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
+export default App;
